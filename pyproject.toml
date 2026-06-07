@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "testmechs"
+version = "0.1.0"
+description = "Python implementation of selected finite-support Testing Mechanisms tests and bounds."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE.md"]
+authors = [
+  {name = "Soonwoo Kwon", email = "soonwoo_kwon@brown.edu"},
+  {name = "Jonathan Roth", email = "jonathan_roth@brown.edu"},
+]
+maintainers = [
+  {name = "Xuanyu Cai", email = "xuanyuCAI@outlook.com"},
+  {name = "Wenli Xu", email = "wlxu@cityu.edu.mo"},
+]
+keywords = [
+  "causal-inference",
+  "mediation-analysis",
+  "sharp-null",
+  "instrumental-variables",
+  "econometrics",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+  "numpy>=1.26",
+  "osqp>=1.0",
+  "pandas>=2.1",
+  "scipy>=1.11",
+]
+
+[project.urls]
+"Method paper" = "https://doi.org/10.1093/restud/rdag028"
+"Method-paper replication" = "https://zenodo.org/records/18946845"
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.8"]
+docs = [
+    "sphinx>=7.0",
+    "myst-parser>=2.0",
+    "sphinx-rtd-theme>=2.0",
+    "sphinx-autodoc-typehints>=1.25",
+    "numpydoc>=1.6",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"testmechs.resources.fixtures" = ["*.csv"]
+"testmechs.resources.statistics" = ["*.tex"]
+"testmechs.resources.tables" = ["*.tex"]
