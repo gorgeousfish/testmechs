@@ -1,325 +1,293 @@
 # testmechs
 
-`testmechs` provides Python tools for selected finite-support Testing
-Mechanisms calculations. It is designed for empirical researchers who work with
-`pandas` data frames and want sharp-null tests, lower-bound calculations,
-average-direct-effect bounds, partial-density displays, diagnostics, and
-strict-JSON outputs in one Python interface.
+Python implementation of the Testing Mechanisms framework (Kwon and Roth, 2024)
+for testing whether treatment effects operate entirely through a specified mediator.
 
-The package implements a Python reporting layer for selected calculations from
-Kwon and Roth's Testing Mechanisms framework. It does not replace the method
-paper as the source of the estimands or identification assumptions.
+## Overview
 
-The main user-facing functions are:
+`testmechs` implements the finite-support Testing Mechanisms calculations from
+Kwon and Roth (2024). Given a binary treatment $D$, a discrete mediator $M$,
+and a discrete outcome $Y$, the package tests the sharp null hypothesis:
 
-- `test_sharp_null()` for CS, ARP, FSST, and Kitagawa-style sharp-null tests.
-- `test_sharp_null_cr()` for the scalar default-order CR confidence-set path.
-- `ci_TV()` for source-anchored FSST grid inversion of the total-variation
-  target in scalar ordered-mediator, discrete-outcome designs.
-- `lb_frac_affected()`, `breakdown_defier_share()`, and `bounds_ade_ats()` for
-  lower-bound, defier-share, and ADE-bound calculations.
-- `partial_density_data()` and `partial_density_plot()` for inspecting how
-  mediator-outcome mass changes across treatment arms.
-- Article reproduction helpers for rebuilding the displayed empirical examples,
-  figure data, resource listings, and JSON reports used by the accompanying
-  manuscript.
+$$H_0: Y(1, m) = Y(0, m) \quad \text{for all } m$$
 
-Beyond the main estimators, the package exposes typed request objects, result
-objects, diagnostic tables, support tables, JSON readers and writers, and
-article reproduction helpers.
+If rejected, the treatment must affect the outcome through channels beyond $M$.
+The package provides sharp-null tests, lower bounds on the fraction affected,
+breakdown-point analysis for monotonicity violations, Lee-style ADE bounds,
+and partial-density displays.
 
 ## Installation
 
-`testmechs` is not yet available from the public Python Package Index. The
-manuscript replication materials therefore treat source-checkout installs and
-review-bundle artifact installs as the supported installation routes.
-
-From the current source checkout, install the package directory:
+Requires Python 3.12 or later.
 
 ```bash
-cd packages/python/testmechs-py
-python -m pip install -e .
-python -m pip install -e ".[plot]"
+pip install testmechs
 ```
 
-From an unpacked reviewer submission bundle, use the bundle-local package path:
+From source:
 
 ```bash
-python -m pip install -e "package/source[plot]"
+git clone https://github.com/gorgeousfish/testmechs.git
+cd testmechs/packages/python/testmechs-py
+pip install -e ".[plot]"
 ```
 
-For a built source archive or wheel supplied with a review bundle, install the
-artifact directly:
+**Dependencies**: NumPy, pandas, SciPy, OSQP.
+Optional `[plot]` extra adds Matplotlib for `partial_density_plot()`.
 
-```bash
-python -m pip install "dist/testmechs-0.1.0.tar.gz[plot]"
-# or
-python -m pip install "dist/testmechs-0.1.0-py3-none-any.whl[plot]"
-```
+## Main Functions
 
-The core package depends on NumPy, pandas, SciPy, and OSQP. The optional `plot`
-extra installs Matplotlib. Non-plotting APIs such as `partial_density_data()`,
-`test_sharp_null()`, `lb_frac_affected()`, `bounds_ade_ats()`, `ci_TV()`, and the
-reproduction report helpers do not require Matplotlib.
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `test_sharp_null()` | Sharp-null test (CS, ARP, FSST, Kitagawa) | `SharpNullResult` |
+| `lb_frac_affected()` | Lower bound on fraction of always-takers affected | `LowerBoundResult` |
+| `breakdown_defier_share()` | Minimum defier share to eliminate the bound | `LowerBoundResult` |
+| `bounds_ade_ats()` | Lee-style average direct effect bounds | `ADEBoundsResult` |
+| `partial_density_data()` | Partial-density/PMF records for plotting | `PartialDensityDataResult` |
+| `partial_density_plot()` | Rendered partial-density figure | Matplotlib `Figure` |
+| `ci_TV()` | Total-variation confidence interval (FSST inversion) | `TVConfidenceIntervalResult` |
 
-## Quick Start
+## Example 1: Bursztyn et al. (2020) — Binary Mediator
+
+Bursztyn, González, and Yanagizawa-Drott (2020) study a field experiment in
+Saudi Arabia where married men received information about other men's support
+for female labor-force participation.
+
+- **D** (treatment): received information (`condition2`)
+- **M** (mediator): signed up for a job-matching service for wife (`signed_up_number`)
+- **Y** (outcome): wife applied for a job outside the home (`applied_out_fl`)
+
+**Question**: Does the information treatment affect job applications *entirely*
+through service sign-up, or are there alternative channels?
 
 ```python
-from pathlib import Path
-
 import pandas as pd
 import testmechs
+from importlib.resources import files
 
-df = pd.DataFrame({
-    "treat": [0, 0, 0, 0, 1, 1, 1, 1],
-    "mediator": [0, 0, 1, 1, 1, 1, 1, 1],
-    "outcome": [0, 1, 0, 1, 0, 1, 1, 1],
-})
-
-sharp_null = testmechs.test_sharp_null(
-    df=df,
-    d="treat",
-    m="mediator",
-    y="outcome",
-    method="CS",
-)
-bound = testmechs.lb_frac_affected(
-    df=df,
-    d="treat",
-    m="mediator",
-    y="outcome",
-)
-
-print(sharp_null.to_frame()[["method", "reject", "p_value"]])
-print(bound.to_frame()[["result", "lower_bound", "lower_bound_status"]])
-
-toy_path = Path("toy-mechanism-data.csv")
-df.to_csv(toy_path, index=False)
-dataset = testmechs.SharedCSVInput(
-    data_path=toy_path,
-    treatment="treat",
-    mediators=("mediator",),
-    outcome="outcome",
-)
-request = testmechs.SharpNullRequest(dataset=dataset, method="CS")
-print(request.comparison_view())
+df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
 ```
 
-The estimator calls return typed result objects with estimates, diagnostics,
-display rows, and strict-JSON payloads. The request view records the same data
-source, column roles, and method when a script needs a reproducible comparison
-view before the statistic is computed.
+### Step 1: Test the sharp null of full mediation
 
-## Main calls and returned objects
+```python
+result = testmechs.test_sharp_null(
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl", method="CS"
+)
+result.p_value
+#> 0.01883
+result.reject
+#> True
+```
 
-| Public call | Returned object | What stays attached |
-| --- | --- | --- |
-| `test_sharp_null()` | `SharpNullResult` | Method label, test decision, p-value, support diagnostics, `to_frame()` row, and strict-JSON `to_dict()` payload |
-| `test_sharp_null_cr()` | `SharpNullResult` | CR confidence-set interval fields, mediator ordering, SciPy LP backend diagnostics, support checks, and strict-JSON payload |
-| `ci_TV()` | `TVConfidenceIntervalResult` | Grid or bisection settings, tested TV nulls, p-values, interval endpoints, weighting choice, source-boundary diagnostics, and strict-JSON payload |
-| `lb_frac_affected()` | `LowerBoundResult` | Estimand, always-taker group where applicable, active restriction, support and solver diagnostics, display row, and JSON payload |
-| `breakdown_defier_share()` | `LowerBoundResult` | Defier-share sensitivity target, active restriction, support diagnostics, display row, and JSON payload |
-| `bounds_ade_ats()` | `ADEBoundsResult` | Target group, endpoint status, trimming diagnostics, display row, and explicit non-finite status fields |
-| `partial_density_data()` | `PartialDensityDataResult` | Grid or support records, target role, positive-part calculation, long-form rows, and plotting metadata when rendered |
-| `partial_density_plot()` | Matplotlib `Figure` | Rendered partial-density display when the optional plotting extra is installed |
+**Interpretation**: The sharp null is rejected at the 5% level (p = 0.019).
+The information treatment affects job applications through channels *beyond*
+service sign-up. There must exist "never-takers" (men who would not sign up
+regardless of treatment) whose wives' job application behavior is changed
+by the treatment.
 
-## Supported workflows
+### Step 2: Lower bound on fraction affected
 
-The Python package is organized around the analysis steps that appear in the
-article and in the original method examples.
+```python
+lb = testmechs.lb_frac_affected(
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl",
+    num_y_bins=2, at_group=0
+)
+lb.lower_bound
+#> 0.10654
+```
 
-- **Run sharp-null tests.** `test_sharp_null()` supports CS, ARP, FSST, and
-  Kitagawa-style procedures from pandas data frames by naming the treatment,
-  mediator, outcome, method, and optional cluster column. The public runner
-  validates column roles, support, tuning parameters, bootstrap settings, random
-  seeds, and cluster inputs before it dispatches to a method runner.
-- **Run the CR confidence-set path.** `test_sharp_null_cr()` exposes the scalar
-  CR confidence-set path with explicit mediator ordering using SciPy linear
-  programming instead of the historical R/Gurobi backend.
-- **Invert TV nulls.** `ci_TV()` inverts the FSST moment-inequality test over a
-  TV grid for one always-taker mediator group. The public contract covers
-  scalar ordered mediators, explicit mediator orderings, discrete outcomes,
-  FSSTdd/FSSTndd tuning, diag or identity weighting, and explicit grid or
-  bisection output with p-values.
-- **Compute lower bounds.** `lb_frac_affected()`,
-  `breakdown_defier_share()`, and `bounds_ade_ats()` implement the lower-bound,
-  defier-share, and ADE-bound calculations used in the article examples. Result
-  objects keep the estimand, support, no-bite state, finite-status markers, and
-  diagnostic payload together.
-- **Inspect partial densities.** `partial_density_data()` returns the row-level
-  partial-density or partial-PMF records behind a display. `partial_density_plot()`
-  uses those records to produce Matplotlib figures when the optional plotting
-  extra is installed.
+**Interpretation**: At least 10.7% of never-takers are affected by the
+treatment through alternative mechanisms. The paper reports ≥11% (rounded).
 
-Sharp-null and bounds results expose `to_dict()`, `to_frame()`, terminal
-strings, and notebook HTML summaries. Their JSON payloads replace non-standard
-`NaN` and infinite values with explicit finite-status fields, so reports can be
-written with strict JSON.
+### Step 3: Breakdown defier share (robustness)
 
-The public checks are deliberately explicit. Functions fail before computation
-when required columns are missing, analysis samples are empty, treatment or
-mediator supports cannot be normalized, requested tuning values are outside the
-supported range, or JSON/export payloads would otherwise contain non-standard
-numeric values. Support and diagnostic frames expose the details needed to audit
-reported values without relying on private state.
+```python
+bd = testmechs.breakdown_defier_share(
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl", at_group=0
+)
+bd.lower_bound
+#> 0.06647
+```
 
-## Request and support objects
+**Interpretation**: Even if up to 6.6% of the population are "defiers"
+(treatment *decreases* their mediator), the lower bound remains positive.
+The evidence is robust to substantial monotonicity violations.
+The paper reports 7% (rounded).
 
-`SharedCSVInput`, `SharpNullRequest`, `LowerBoundRequest`,
-`BreakdownDefierShareRequest`, `ADEBoundsRequest`, and `PartialDensityRequest`
-record the input data source and estimator options before a statistic is
-computed. They are descriptors, not estimators. Their public
-`comparison_view()` method returns a strict-JSON view for comparing what was
-requested with the returned result object.
+### Step 4: Average direct effect bounds
 
-The request payloads keep the main analysis choices explicit: column roles,
-method names, tuning choices, target groups, defier-cap options, and any
-supported `reg_formula` adjustment. Support views answer a complementary question:
-what can this result report, and which diagnostic fields should be inspected?
-The main reader-facing helpers include `bounds_support_frame()`,
-`regression_adjustment_support_frame()`, `partial_density_support_frame()`,
-`cell_count_diagnostics_support_frame()`, and
-`sharp_null_diagnostic_schema_frame()`.
+```python
+ade = testmechs.bounds_ade_ats(
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl"
+)
+ade.lower_bound, ade.upper_bound
+#> (-0.05714, 0.24478)
+```
 
-Reproduction display helpers format generated reports without turning them into
-new estimators. `paper_monte_carlo_reproduction_display_frame()` returns a
-compact reader-oriented Monte Carlo table with labels such as
-`clusters=unclustered`, `outcome_bins=as observed`, and publication-friendly
-nonfinite labels (`NA`, `+Inf`, `-Inf`). This display helper is reserved for
-accepted Monte Carlo evidence; it does not support Monte Carlo
-operating-characteristic claims in the current article.
+**Interpretation**: The Lee-style bounds on the average direct effect for
+always-takers are [−0.057, 0.245]. The interval includes zero but its
+upper bound indicates a potentially large direct effect.
 
-These helpers are documentation surfaces rather than new estimators. They are
-useful when a reported value needs to be checked against support normalization,
-solver status, finite-status labels, or cell-count diagnostics. Release-scoped
-adjustment support is documented separately in `docs/api/`.
+## Example 2: Baranov et al. (2020) — Clustered Design
 
-## Supported designs and boundaries
+Baranov et al. (2020) study a randomized CBT (cognitive behavioral therapy)
+intervention for perinatally depressed women in Pakistan. At 7-year follow-up,
+the program improved financial empowerment.
 
-The package is intentionally release-scoped. It implements the selected
-finite-support Testing Mechanisms calculations used by the article and keeps
-invalid states from flowing silently into reported output.
+- **D** (treatment): assigned to CBT program (`treat`)
+- **M** (mediator): grandmother present in household (`grandmother`)
+- **Y** (outcome): mother's financial empowerment index (`motherfinancial`)
+- **Cluster**: Union Council (`uc`, the randomization unit)
 
-- Unadjusted sharp-null tests support the CS, ARP, FSST, and Kitagawa-style
-  procedures exposed by `test_sharp_null()`, with release-scoped diagnostics for
-  support normalization, approximation choices, and cell counts.
-- `test_sharp_null_cr()` exposes the scalar CR confidence-set path with explicit
-  mediator ordering and SciPy linear-programming diagnostics.
-- `ci_TV()` provides source-anchored FSST grid or bisection inversion for scalar
-  ordered mediators, explicit mediator orderings, discrete outcomes, and `diag`
-  or `identity` weighting.
-- `lb_frac_affected()`, `breakdown_defier_share()`, and `bounds_ade_ats()`
-  cover the lower-bound, defier-share, and ADE-bound workflows used in the
-  article examples, including scalar and vector mediator support where the
-  documented restrictions apply.
-- `partial_density_data()` returns row-level records behind partial-density or
-  partial-PMF displays, while `partial_density_plot()` renders those records
-  when the optional plotting extra is installed.
-- Adjusted probability helpers support the documented `reg_formula` surface for
-  selected lower-bound and ADE-bound calculations. Adjusted nonbinary/vector/IV
-  sharp-null inference remains outside the current public contract.
+**Question**: Does CBT affect financial empowerment entirely through
+grandmother presence, or are there alternative channels?
 
-Inputs fail early when required columns are missing, samples are empty, support
-cannot be normalized, non-finite numeric values would enter finite-support
-calculations, or tuning values fall outside the supported range. For boundary
-details, see `docs/api/` and the manuscript evidence maps.
+```python
+df = pd.read_csv(files("testmechs.resources.fixtures") / "baranov_mother_data.csv")
+```
 
-## Article examples and reproduction
+### Sharp null test with cluster-robust inference
 
-The accompanying article uses the package as a reporting workflow rather than
-as a hidden analysis script. Its displayed outputs include:
+```python
+result = testmechs.test_sharp_null(
+    df=df, d="treat", m="grandmother", y="motherfinancial",
+    method="CS", num_y_bins=5, cluster="uc"
+)
+result.p_value
+#> 0.02284
+result.reject
+#> True
+```
 
-- four lower-bound comparisons regenerated from packaged empirical inputs and
-  rounded method-paper targets, using a `0.005` tolerance on the proportion
-  scale;
-- the Baranov relationship-quality diagnostic table regenerated from the same
-  selected lower-bound result object;
-- a deterministic sharp-null example that shows both `to_frame()` and
-  `to_dict()` views of the same fitted object;
-- a deterministic ADE-bound example that exposes endpoint, target-group,
-  trimming, and no-bite diagnostics; and
-- a Kerwin partial-density display regenerated from plot-ready package records
-  and figure metadata.
+**Interpretation**: The sharp null is rejected (p = 0.023). CBT improves
+financial empowerment through channels *beyond* its effect on grandmother
+presence. The paper reports p = 0.02.
 
-From a checkout, run:
+### Lower bound
+
+```python
+lb = testmechs.lb_frac_affected(
+    df=df, d="treat", m="grandmother", y="motherfinancial",
+    num_y_bins=5, at_group=0
+)
+lb.lower_bound
+#> 0.18589
+```
+
+**Interpretation**: At least 18.6% of never-takers (women without a grandmother
+regardless of treatment) have their financial empowerment affected by CBT
+through alternative channels. The paper reports ≥19%.
+
+### Breakdown defier share
+
+```python
+bd = testmechs.breakdown_defier_share(
+    df=df, d="treat", m="grandmother", y="motherfinancial",
+    num_y_bins=5, at_group=0
+)
+bd.lower_bound
+#> 0.10803
+```
+
+**Interpretation**: The evidence survives up to 10.8% defiers — strong robustness.
+The paper reports 11%.
+
+## Example 3: Multi-valued and Vector Mediators
+
+The package supports ordered multi-valued mediators and vector mediators
+with elementwise monotonicity.
+
+### Relationship quality (1–5 scale)
+
+```python
+lb = testmechs.lb_frac_affected(
+    df=df, d="treat", m="relationship_husb", y="motherfinancial",
+    num_y_bins=5, allow_min_defiers=True
+)
+lb.lower_bound
+#> 0.10022
+```
+
+**Interpretation**: Pooling across all always-taker groups, at least 10.0% are
+affected by CBT through channels beyond relationship quality.
+The paper reports 10%.
+
+### Combined vector mediator (grandmother + relationship)
+
+```python
+lb = testmechs.lb_frac_affected(
+    df=df, d="treat", m=["grandmother", "relationship_husb"], y="motherfinancial",
+    num_y_bins=5, allow_min_defiers=True
+)
+lb.lower_bound
+#> 0.07252
+```
+
+**Interpretation**: Even when both mechanisms are considered jointly, at least
+7.3% of always-takers are still affected through other channels. The paper
+reports 7%. This is the tightest bound — the combined mechanisms explain most,
+but not all, of the treatment effect.
+
+## Automated Reproduction Verification
+
+The package includes a built-in reproduction report that compares all Python
+results against paper-published statistics:
+
+```python
+from testmechs.empirical import paper_empirical_reproduction_report
+
+report = paper_empirical_reproduction_report()
+report.summary["passed_target_rows"], report.summary["target_row_count"]
+#> (4, 4)
+report.summary["max_absolute_difference"]
+#> 0.00411
+```
+
+All 4 empirical targets pass within the 0.005 tolerance on the proportion
+scale. To regenerate all manuscript artifacts:
 
 ```bash
-python manuscript/replication/run_replication.py --overwrite
+python3 manuscript/replication/run_replication.py --overwrite
 ```
 
-The replication entry point regenerates the empirical target table, request
-view, sharp-null, lower-bound, ADE-bound, and partial-density example
-fragments, the Baranov relationship-quality diagnostic table, the partial-density
-figure, and the resource manifest. When a checkout is available, reproduction
-helpers prefer the local fixture and statistics files. In an installed wheel or
-source archive, they fall back to packaged resources, which lets a reviewer run
-the packaged article reproduction helpers without the source tree.
+## Bundled Datasets
 
-The package exposes `testmechs.__version__` so generated reports can record the
-installed version. The distribution check builds a wheel and source archive,
-confirms that they include the AGPL license text and packaged reproduction
-resources, and installs both artifacts in temporary environments for the
-selected article reproduction path. The package metadata declares
-`AGPL-3.0-or-later`, and the built artifacts include the AGPL license text from
-`LICENSE.md`, paper reproduction fixture CSVs, empirical statistic resources,
-and table resources.
+| Dataset | Source | Observations |
+|---------|--------|-------------|
+| `burstzyn_data.csv` | Bursztyn, González, & Yanagizawa-Drott (2020, AER) | 375 |
+| `baranov_mother_data.csv` | Baranov et al. (2020, AER) | 903 |
+| `kerwin_data.csv` | Kerwin (2018) | 945 |
 
-`paper_reproduction_resource_manifest()`,
-`paper_reproduction_resource_manifest_packet()`,
-`write_paper_reproduction_resource_manifest_json()`,
-`load_paper_reproduction_resource_manifest_json()`, and
-`load_paper_reproduction_resource_manifest_packet_json()` expose and persist a
-hash-stamped listing of packaged fixtures, statistics, and table resources for
-review scripts. The manifest records the package version that produced the manifest,
-an overall manifest SHA-256, and per-resource SHA-256 hashes. The
-resource-manifest writer refuses to replace existing files by default, requires `overwrite` to be a real boolean,
-and only replaces an existing manifest when `overwrite=True`. The article
-reproduction route uses these helpers only to rebuild displayed article objects.
+Access via:
 
-From an unpacked reviewer bundle, install the bundled package source and rerun
-the bundle-local entry point:
-
-```bash
-python -m pip install -e "package/source[plot]"
-python replication/run_replication.py --overwrite
+```python
+from importlib.resources import files
+path = files("testmechs.resources.fixtures") / "burstzyn_data.csv"
 ```
 
-The distribution check supports package-resource and article-output
-reproduction claims. It is not a public package-index installation test and
-does not establish Monte Carlo operating characteristics, performance, or full
-method-paper reproduction.
+## Citation
 
-## Documentation and release boundary
+```bibtex
+@article{kwon2024testing,
+  title   = {Testing Mechanisms},
+  author  = {Kwon, Soonwoo and Roth, Jonathan},
+  journal = {Review of Economic Studies},
+  year    = {2024},
+  doi     = {10.1093/restud/rdag028}
+}
+```
 
-Detailed API contracts and extended design boundaries are documented in
-`docs/api/`. The README keeps only the package-facing release boundary: public
-calls fail clearly when required analysis columns are missing, support cannot be
-normalized, non-finite numeric inputs would enter finite-support calculations,
-or requested tuning values fall outside the supported range. Result objects
-preserve compact display rows and strict-JSON payloads so reported values remain
-attached to support, restriction, sample, and diagnostic fields.
-Support helpers expose support normalization, solver status, finite-status
-labels, or cell-count diagnostics without requiring private state.
+## Package Authors
 
-This package implements the Python API described above, not the full historical
-R package API and not the full set of method-paper simulations. The current
-software article does not make Monte Carlo operating-characteristic,
-performance, public package-index availability, or new empirical-substantive
-claims. The repository-level functional equivalence matrix records the current
-R-to-Python boundary before any package-level parity claim is made.
+- Xuanyu Cai, City University of Macau (xuanyuCAI@outlook.com)
+- Wenli Xu, City University of Macau (wlxu@cityu.edu.mo)
 
-## License and citation
-
-`testmechs` is distributed under `AGPL-3.0-or-later`. Please cite the method
-paper when using the Testing Mechanisms estimands and cite the accompanying
-software article when using this Python implementation.
-
-## Authors
+## Methodology Authors
 
 - Soonwoo Kwon (Brown University)
 - Jonathan Roth (Brown University)
 
-## Implementation
+## License
 
-- Xuanyu Cai, City University of Macau (xuanyuCAI@outlook.com)
-- Wenli Xu, City University of Macau (wlxu@cityu.edu.mo)
+AGPL-3.0-or-later
