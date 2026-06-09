@@ -34,3 +34,6 @@ htmlcov/
 
 # mypy
 .mypy_cache/
+
+# Tests (kept in project root, not in package repo)
+tests/
