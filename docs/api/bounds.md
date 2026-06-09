@@ -1,8 +1,12 @@
 # Bound Estimators
 
-This module implements lower bounds on the fraction of always-takers affected,
-ADE (average direct effect) partial-identification bounds, and breakdown-point
-analysis for defier-share relaxations.
+This module implements lower bounds on the fraction of $k$-always-takers
+(individuals with $M(1) = M(0) = m_k$) affected by treatment through
+alternative channels, Lee-style partial-identification bounds on the average
+direct effect (ADE), and breakdown-point analysis for defier-share relaxations.
+
+These bounds quantify the **magnitude** of alternative mechanisms after the
+sharp null has been rejected.
 
 ## `lb_frac_affected()`
 
@@ -25,13 +29,16 @@ testmechs.lb_frac_affected(
 
 ### Description
 
-Computes a lower bound on the fraction of always-takers whose outcome is
-affected by treatment outside the mediator channel. This equals a lower bound
-on the total variation distance between Y(1,m) and Y(0,m) for always-takers
-with M(1) = M(0) = m.
+Computes a lower bound on $\nu_k = P(Y(1,m_k) \neq Y(0,m_k) \mid M(1) = M(0) = m_k)$,
+the fraction of $k$-always-takers whose outcome is affected by treatment outside
+the mediator channel. This equals a lower bound on the total variation distance
+between the potential outcome distributions $Y(1,m_k)$ and $Y(0,m_k)$ for
+individuals with $M(1) = M(0) = m_k$.
 
 When `at_group` is `None`, returns a population-weighted average across all
-always-taker groups.
+always-taker groups. In the binary-mediator case, `at_group=0` targets
+"never-takers" ($M=0$ under both treatments) and `at_group=1` targets
+"always-takers" ($M=1$ under both treatments).
 
 ### Parameters
 
@@ -65,24 +72,34 @@ always-taker groups.
 
 ```python
 import testmechs
+from importlib.resources import files
+import pandas as pd
 
+df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
+
+# Lower bound on fraction of never-takers (M=0 under both) affected
 bound = testmechs.lb_frac_affected(
-    df=df, d="treat", m="mediator", y="outcome", at_group=1
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl",
+    num_y_bins=2, at_group=0
 )
-print(f"Lower bound: {bound.lower_bound:.4f}")
-print(bound.to_frame()[["result", "lower_bound", "lower_bound_status"]])
+bound.lower_bound
+#> 0.10654
+# Interpretation: At least 10.7% of never-takers are affected through alternative channels.
 
 # With relaxed defier cap
 bound_relaxed = testmechs.lb_frac_affected(
-    df=df, d="treat", m="mediator", y="outcome",
-    max_defiers_share=0.01
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl",
+    num_y_bins=2, at_group=0, max_defiers_share=0.01
 )
 
-# Use exact minimum compatible defier share
-bound_min = testmechs.lb_frac_affected(
-    df=df, d="treat", m="mediator", y="outcome",
-    allow_min_defiers=True
+# Multi-valued mediator with minimum compatible defier share
+df2 = pd.read_csv(files("testmechs.resources.fixtures") / "baranov_mother_data.csv")
+bound_rel = testmechs.lb_frac_affected(
+    df=df2, d="treat", m="relationship_husb", y="motherfinancial",
+    num_y_bins=5, allow_min_defiers=True
 )
+bound_rel.lower_bound
+#> 0.10022
 ```
 
 ---
@@ -106,10 +123,14 @@ testmechs.bounds_ade_ats(
 
 ### Description
 
-Computes sharp bounds on E[Y(1,k) - Y(0,k) | G = kk], the average direct
-effect of treatment on the outcome for k-always-takers. Uses Lee-style
-trimming on the conditional outcome distribution within the identified
-always-taker subpopulation.
+Computes sharp bounds on $ADE_k = E[Y(1,m_k) - Y(0,m_k) \mid M(1) = M(0) = m_k]$,
+the average direct effect of treatment on the outcome for $k$-always-takers.
+Uses Lee-style trimming on the conditional outcome distribution within the
+identified always-taker subpopulation.
+
+The bounds are informative about the **average magnitude** of alternative
+mechanisms for always-takers, complementing the lower bound on the **fraction**
+affected.
 
 ### Parameters
 
@@ -140,16 +161,21 @@ always-taker subpopulation.
 ### Example
 
 ```python
-ade = testmechs.bounds_ade_ats(
-    df=df, d="treat", m="mediator", y="outcome", at_group=1
-)
-print(f"ADE bounds: [{ade.lower_bound:.4f}, {ade.upper_bound:.4f}]")
+import testmechs
+from importlib.resources import files
+import pandas as pd
 
-# With regression adjustment
-ade_adj = testmechs.bounds_ade_ats(
-    df=df, d="treat", m="mediator", y="outcome",
-    at_group=1, reg_formula="~ treat + age_baseline"
+df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
+
+# ADE bounds for always-takers (M=1 under both treatments)
+ade = testmechs.bounds_ade_ats(
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl"
 )
+ade.lower_bound, ade.upper_bound
+#> (-0.05714, 0.24478)
+# Interpretation: The average direct effect for always-takers is partially
+# identified in [-0.057, 0.245]. The interval includes zero but the upper
+# bound indicates a potentially large direct effect.
 ```
 
 ### Notes
@@ -186,6 +212,9 @@ value at which `lb_frac_affected()` returns a lower bound of zero. This is
 the smallest relaxation of monotonicity that eliminates evidence against the
 sharp null of full mediation.
 
+A larger breakdown point indicates stronger robustness: even with substantial
+monotonicity violations, the evidence for alternative mechanisms persists.
+
 Uses binary search between the minimum compatible defier share and 1.0.
 
 ### Parameters
@@ -211,10 +240,20 @@ with bracket precision diagnostics.
 ### Example
 
 ```python
+import testmechs
+from importlib.resources import files
+import pandas as pd
+
+df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
+
+# Breakdown defier share for never-takers
 breakdown = testmechs.breakdown_defier_share(
-    df=df, d="treat", m="mediator", y="outcome"
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl", at_group=0
 )
-print(f"Breakdown cap: {breakdown.lower_bound:.4f}")
+breakdown.lower_bound
+#> 0.06647
+# Interpretation: Evidence survives up to 6.6% defiers in the population.
+# The paper reports 7% (rounded).
 ```
 
 ---

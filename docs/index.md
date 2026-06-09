@@ -1,50 +1,80 @@
 # testmechs Documentation
 
-**testmechs** is a Python package for selected finite-support Testing
-Mechanisms calculations. It implements a reporting layer for tests, bounds,
-diagnostics, exports, and article reproduction objects from Kwon and Roth's
-Testing Mechanisms framework.
+**testmechs** is a Python package implementing the Testing Mechanisms framework
+from Kwon and Roth (2024). It provides finite-support sharp-null hypothesis
+tests, lower-bound estimators, average direct effect bounds, breakdown-point
+analysis, and partial-density displays for causal mediation analysis.
+
+## Methodology
+
+The package tests the **sharp null hypothesis of full mediation**:
+
+$$H_0: Y(1, m) = Y(0, m) \quad \text{for all } m$$
+
+Under this null, treatment $D$ affects outcome $Y$ **only** through its effect
+on mediator $M$. If rejected, there must exist alternative mechanisms — direct
+effects of $D$ on $Y$ not operating through $M$.
+
+The approach connects mediation analysis to the instrument validity literature:
+under the sharp null plus independence and monotonicity, the treatment $D$ is a
+valid instrument for the LATE of $M$ on $Y$. Testable implications of instrument
+validity then provide tests of the sharp null.
 
 ## Features
 
-- Sharp-null hypothesis tests (CS and CR methods)
-- Lower bounds on fraction affected
-- ADE/ATS bounds estimation
-- Partial-density data and visualization
-- Regression-adjusted probability estimation
-- Reproducible request/result contracts
-- JSON, DataFrame, and HTML views for the main statistical result objects
+- **Sharp-null tests** — CS (Cox and Shi 2023), ARP (Andrews, Roth, Pakes 2023),
+  FSST (Fang, Santos, Shaikh, Torgovitsky 2023), and Kitagawa (2015) procedures
+- **Lower bounds** on the fraction of always-takers affected through alternative channels
+- **Breakdown-point analysis** — minimum defier share to eliminate evidence
+- **ADE bounds** — Lee-style partial-identification of the average direct effect
+- **Partial-density displays** — visualize how mediator-outcome mass shifts across treatment arms
+- **Cluster-robust inference** for designs with clustered randomization
+- **Vector mediators** with elementwise monotonicity
+- **Regression adjustment** for controls, fixed effects, and IV designs
+- **Strict-JSON exports** — all result objects provide `to_dict()`, `to_frame()`, and notebook HTML views
 
-## Getting Started
+## Installation
 
-`testmechs` is not yet available from the public Python Package Index. For the
-current review bundle, install the supplied source checkout or reviewer artifact.
+```bash
+pip install testmechs
+```
+
+From source:
 
 ```bash
 cd packages/python/testmechs-py
-python -m pip install -e ".[plot]"  # includes matplotlib
+pip install -e ".[plot]"
 ```
 
-From an unpacked reviewer submission bundle, use the bundle-local package path:
+**Dependencies**: NumPy, pandas, SciPy, OSQP.
+Optional `[plot]` extra adds Matplotlib for `partial_density_plot()`.
 
-```bash
-python -m pip install -e "package/source[plot]"
-```
+## Quick Start
 
 ```python
 import pandas as pd
 import testmechs
+from importlib.resources import files
 
-df = pd.DataFrame({
-    "treat": [0, 0, 0, 0, 1, 1, 1, 1],
-    "mediator": [0, 0, 1, 1, 1, 1, 1, 1],
-    "outcome": [0, 1, 0, 1, 0, 1, 1, 1],
-})
+# Load bundled empirical dataset (Bursztyn et al. 2020)
+df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
 
+# Test the sharp null of full mediation
 result = testmechs.test_sharp_null(
-    df=df, d="treat", m="mediator", y="outcome", method="CS"
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl", method="CS"
 )
-print(result.reject, result.p_value)
+result.p_value
+#> 0.01883
+result.reject
+#> True
+
+# Lower bound on fraction of never-takers affected
+bound = testmechs.lb_frac_affected(
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl",
+    num_y_bins=2, at_group=0
+)
+bound.lower_bound
+#> 0.10654
 ```
 
 ## API Reference

@@ -1,29 +1,24 @@
 # testmechs API Reference
 
-`testmechs` provides Python tools for finite-support Testing Mechanisms
-calculations. It implements a Python reporting layer for selected calculations
-from Kwon and Roth's Testing Mechanisms framework.
+`testmechs` implements the Testing Mechanisms framework (Kwon and Roth, 2024)
+for testing whether treatment effects operate entirely through a specified
+mediator. The package provides sharp-null tests, lower bounds on the fraction
+affected, ADE bounds, breakdown-point analysis, and partial-density displays.
 
 ## Installation
 
-`testmechs` is not yet available from the public Python Package Index. Install
-the review materials from the supplied source checkout or reviewer artifact:
-
 ```bash
-# From source checkout
-cd packages/python/testmechs-py
-python -m pip install -e .
-python -m pip install -e ".[plot]"
-
-# From review bundle artifact
-python -m pip install "dist/testmechs-0.1.0.tar.gz[plot]"
-python -m pip install "dist/testmechs-0.1.0-py3-none-any.whl[plot]"
+pip install testmechs
 ```
 
-**Dependencies:**
+From source:
 
-- Core: NumPy, pandas, SciPy, OSQP
-- Optional `[plot]`: Matplotlib
+```bash
+pip install -e ".[plot]"
+```
+
+**Dependencies**: NumPy, pandas, SciPy, OSQP.
+Optional `[plot]` extra adds Matplotlib.
 
 ## Module Overview
 
@@ -35,7 +30,7 @@ python -m pip install "dist/testmechs-0.1.0-py3-none-any.whl[plot]"
 | [Preprocessing](preprocess.md) | Data cleaning and discretization | `remove_missing_from_df()`, `discretize_y()` |
 | [Regression](regression.md) | Adjusted probability estimation | `compute_adjusted_probabilities()`, `parse_reg_formula()` |
 | [Contracts](contracts.md) | Request/result descriptors | `SharedCSVInput`, `SharpNullRequest`, result classes |
-| [Monte Carlo](monte_carlo.md) | Optional simulation helpers, not current article evidence | `run_binary_cs_monte_carlo()` |
+| [Monte Carlo](monte_carlo.md) | Optional simulation helpers | `run_binary_cs_monte_carlo()` |
 | [R-Python Mapping](r_python_mapping.md) | Cross-language reference | Function/parameter correspondence table |
 
 ## Quick Start
@@ -43,73 +38,95 @@ python -m pip install "dist/testmechs-0.1.0-py3-none-any.whl[plot]"
 ```python
 import pandas as pd
 import testmechs
+from importlib.resources import files
 
-# Prepare data
-df = pd.DataFrame({
-    "treat": [0, 0, 0, 0, 1, 1, 1, 1],
-    "mediator": [0, 0, 1, 1, 1, 1, 1, 1],
-    "outcome": [0, 1, 0, 1, 0, 1, 1, 1],
-})
+# Load bundled Bursztyn et al. (2020) data
+df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
 
-# Sharp-null test
+# Sharp-null test: does information affect job applications entirely through sign-up?
 result = testmechs.test_sharp_null(
-    df=df, d="treat", m="mediator", y="outcome", method="CS"
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl", method="CS"
 )
-print(result.reject)        # True/False
-print(result.p_value)       # p-value
-print(result.to_frame())    # one-row summary DataFrame
+result.p_value
+#> 0.01883
+result.reject
+#> True
 
-# Lower bound on fraction affected
+# Lower bound on fraction of never-takers (M=0 under both) affected
 bound = testmechs.lb_frac_affected(
-    df=df, d="treat", m="mediator", y="outcome"
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl",
+    num_y_bins=2, at_group=0
 )
-print(bound.lower_bound)
-print(bound.to_frame())
+bound.lower_bound
+#> 0.10654
 
-# ADE bounds
-ade = testmechs.bounds_ade_ats(
-    df=df, d="treat", m="mediator", y="outcome", at_group=1
+# Breakdown-point: minimum defier share to eliminate the bound
+bd = testmechs.breakdown_defier_share(
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl", at_group=0
 )
-print(ade.lower_bound, ade.upper_bound)
+bd.lower_bound
+#> 0.06647
+
+# Lee-style ADE bounds for always-takers
+ade = testmechs.bounds_ade_ats(
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl"
+)
+ade.lower_bound, ade.upper_bound
+#> (-0.05714, 0.24478)
 
 # Request descriptor for reproducible comparison
 from pathlib import Path
 dataset = testmechs.SharedCSVInput(
-    data_path=Path("data.csv"),
-    treatment="treat",
-    mediators=("mediator",),
-    outcome="outcome",
+    data_path=Path("burstzyn_data.csv"),
+    treatment="condition2",
+    mediators=("signed_up_number",),
+    outcome="applied_out_fl",
 )
 request = testmechs.SharpNullRequest(dataset=dataset, method="CS")
-print(request.comparison_view())
 ```
 
 ## Main Calls and Returned Objects
 
-| Public call | Returned object | Key attachments |
+| Public call | Returned object | Key attributes |
 | --- | --- | --- |
-| `test_sharp_null()` | `SharpNullResult` | method, reject, p_value, diagnostics, `to_frame()`, `to_dict()` |
+| `test_sharp_null()` | `SharpNullResult` | `reject`, `p_value`, `method`, `test_stat`, `critical_value`, `diagnostics` |
 | `test_sharp_null_cr()` | `SharpNullResult` | CR confidence-set interval, SciPy LP backend diagnostics |
-| `ci_TV()` | `TVConfidenceIntervalResult` | Grid/bisection settings, p-values, interval endpoints |
-| `lb_frac_affected()` | `LowerBoundResult` | lower_bound, estimand, at_group, restriction, diagnostics |
-| `bounds_ade_ats()` | `ADEBoundsResult` | lower_bound, upper_bound, at_group, trimming diagnostics |
+| `ci_TV()` | `TVConfidenceIntervalResult` | `lower`, `upper`, `accepted_grid`, `at_group` |
+| `lb_frac_affected()` | `LowerBoundResult` | `lower_bound`, `estimand`, `at_group`, `restriction` |
+| `bounds_ade_ats()` | `ADEBoundsResult` | `lower_bound`, `upper_bound`, `at_group`, trimming diagnostics |
 | `breakdown_defier_share()` | `LowerBoundResult` | Breakdown defier-share cap, bracket precision |
 | `partial_density_data()` | `PartialDensityDataResult` | Row-level records, positive-part diagnostics |
-| `partial_density_plot()` | `matplotlib.Figure` | Rendered figure with attached metadata |
+| `partial_density_plot()` | `matplotlib.Figure` | Rendered figure with publication styling |
 
 ## Result Object Methods
 
-The main statistical result objects provide:
+All statistical result objects provide:
 
-- **`to_dict()`** — Strict-JSON-safe dictionary payload (replaces NaN/Inf with status fields)
+- **`to_dict()`** — Strict-JSON-safe dictionary (replaces NaN/Inf with status fields)
 - **`to_frame()`** — One-row pandas DataFrame summary
 - **`_repr_html_()`** — Notebook-friendly HTML display
+
+## Bundled Datasets
+
+| Dataset | Source | Observations |
+| --- | --- | --- |
+| `burstzyn_data.csv` | Bursztyn, González, & Yanagizawa-Drott (2020, AER) | 375 |
+| `baranov_mother_data.csv` | Baranov et al. (2020, AER) | 903 |
+| `kerwin_data.csv` | Kerwin (2018) | 945 |
+
+Access via:
+
+```python
+from importlib.resources import files
+path = files("testmechs.resources.fixtures") / "burstzyn_data.csv"
+```
 
 ## Version
 
 ```python
 import testmechs
 print(testmechs.__version__)
+#> 0.1.0
 ```
 
 ## License

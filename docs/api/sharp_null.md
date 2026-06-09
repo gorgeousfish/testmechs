@@ -1,8 +1,17 @@
 # Sharp Null Hypothesis Testing
 
 This module provides hypothesis tests for the sharp null of full mediation:
-H0: Y(1,m) = Y(0,m) for all m. Tests whether the treatment effect on the
-outcome operates entirely through the mediator.
+
+$$H_0: Y(1,m) = Y(0,m) \quad \text{for all } m$$
+
+Under this null, treatment $D$ affects outcome $Y$ **only** through mediator $M$.
+If rejected, there must exist alternative mechanisms — direct effects of $D$ on $Y$
+not operating through $M$.
+
+The approach exploits connections to the instrument validity literature: under the
+sharp null plus independence and monotonicity, $D$ is a valid instrument for the
+LATE of $M$ on $Y$. Testable implications of instrument validity (Kitagawa 2015,
+Balke and Pearl 1997) then provide tests of the sharp null.
 
 ## `test_sharp_null()`
 
@@ -57,11 +66,11 @@ the `method` parameter.
 
 | Method | Full Name | Requirements | Notes |
 | --- | --- | --- | --- |
-| `"CS"` | Cox and Shi (2023) | Any mediator support | Recommended default; conditional test |
-| `"ARP"` | Andrews, Roth, Pakes (2023) | Any mediator support | Hybrid test |
-| `"FSSTdd"` | FSST data-driven lambda | Scalar ordered mediator | Data-driven lambda selection |
-| `"FSSTndd"` | FSST non-data-driven lambda | Scalar ordered mediator | Fixed lambda |
-| `"K"` | Kitagawa (2015) | Binary mediator only | Combined Z-test, monotonicity-only |
+| `"CS"` | Cox and Shi (2023) | Any mediator support | Recommended default; conditional inference approach |
+| `"ARP"` | Andrews, Roth, Pakes (2023) | Any mediator support | Hybrid conditional/least-favorable test |
+| `"FSSTdd"` | Fang, Santos, Shaikh, Torgovitsky (2023) data-driven | Scalar ordered mediator | Data-driven moment selection |
+| `"FSSTndd"` | Fang, Santos, Shaikh, Torgovitsky (2023) non-data-driven | Scalar ordered mediator | Fixed moment selection |
+| `"K"` | Kitagawa (2015) | Binary mediator only | Combined Z-test exploiting LATE testable implications |
 
 ### Returns
 
@@ -81,13 +90,30 @@ the `method` parameter.
 ```python
 import pandas as pd
 import testmechs
+from importlib.resources import files
 
-df = pd.read_csv("data.csv")
+# Load Bursztyn et al. (2020) data
+df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
+
+# Test: does information affect job applications entirely through service sign-up?
 result = testmechs.test_sharp_null(
-    df=df, d="treat", m="mediator", y="outcome", method="CS"
+    df=df, d="condition2", m="signed_up_number", y="applied_out_fl", method="CS"
 )
-print(f"Reject: {result.reject}, p-value: {result.p_value:.4f}")
-print(result.to_frame()[["method", "reject", "p_value"]])
+result.p_value
+#> 0.01883
+result.reject
+#> True
+# Interpretation: The sharp null is rejected. The information treatment affects
+# job applications through channels beyond service sign-up.
+
+# With cluster-robust inference (Baranov et al. 2020)
+df2 = pd.read_csv(files("testmechs.resources.fixtures") / "baranov_mother_data.csv")
+result2 = testmechs.test_sharp_null(
+    df=df2, d="treat", m="grandmother", y="motherfinancial",
+    method="CS", num_y_bins=5, cluster="uc"
+)
+result2.p_value
+#> 0.02284
 ```
 
 ### Notes

@@ -4,6 +4,11 @@ This module provides functions for computing and visualizing partial-density
 or partial-PMF records that show how mediator-outcome mass changes across
 treatment arms.
 
+The partial density illustrates the testable implications of the sharp null
+visually: under the null $P(Y \in A, M=m_k \mid D=0) \geq P(Y \in A, M=m_k \mid D=1)$
+for never-takers, so violations appear as regions where the treated distribution
+exceeds the control distribution.
+
 ## `partial_density_data()`
 
 ```python
@@ -58,17 +63,23 @@ partial-PMF records (optionally after outcome binning). With
 
 ```python
 import testmechs
+from importlib.resources import files
+import pandas as pd
 
+df = pd.read_csv(files("testmechs.resources.fixtures") / "baranov_mother_data.csv")
+
+# Discrete partial-PMF records for the grandmother mechanism
 data_result = testmechs.partial_density_data(
-    df=df, d="treat", m="mediator", y="outcome"
+    df=df, d="treat", m="grandmother", y="motherfinancial", num_y_bins=5
 )
-# Access row-level records
-for row in data_result.partial_density_row_records:
-    print(row)
 
-# Continuous outcome
+# Access as DataFrame
+frame = data_result.to_frame()
+print(frame.head())
+
+# Continuous outcome (Bursztyn example uses binary Y, so use Baranov)
 data_cont = testmechs.partial_density_data(
-    df=df, d="treat", m="mediator", y="income",
+    df=df, d="treat", m="grandmother", y="motherfinancial",
     continuous_y=True, num_grid_points=5000
 )
 ```
@@ -150,25 +161,28 @@ The plot uses publication-oriented defaults:
 
 ```python
 import testmechs
+from importlib.resources import files
+import pandas as pd
 
-# Discrete partial-PMF plot
+df = pd.read_csv(files("testmechs.resources.fixtures") / "baranov_mother_data.csv")
+
+# Discrete partial-PMF plot for the grandmother mechanism
 fig = testmechs.partial_density_plot(
-    df=df, d="treat", m="mediator", y="outcome",
-    density_1_label="P(Y|D=1,M=1)", density_0_label="P(Y|D=0,M=1)"
+    df=df, d="treat", m="grandmother", y="motherfinancial",
+    num_y_bins=5,
+    density_1_label="P(Y,M=1|D=1)",
+    density_0_label="P(Y,M=1|D=0)",
+    caption="Partial density: grandmother mechanism"
 )
-fig.savefig("partial_density.pdf")
+fig.savefig("partial_density_grandmother.pdf")
 
 # Continuous kernel-density plot
 fig = testmechs.partial_density_plot(
-    df=df, d="treat", m="mediator", y="income",
-    continuous_y=True, caption="Partial density of income for always-takers"
+    df=df, d="treat", m="grandmother", y="motherfinancial",
+    continuous_y=True,
+    caption="Partial density of financial empowerment for always-takers"
 )
 fig.savefig("partial_density_continuous.pdf")
-
-# Never-taker orientation
-fig = testmechs.partial_density_plot(
-    df=df, d="treat", m="mediator", y="outcome", plot_nts=True
-)
 ```
 
 ---

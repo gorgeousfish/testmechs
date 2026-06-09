@@ -12,8 +12,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 # -- Project information -----------------------------------------------------
 project = "testmechs"
-copyright = "2024, Soonwoo Kwon and Jonathan Roth"
-author = "Soonwoo Kwon and Jonathan Roth"
+copyright = "2024-2025, Soonwoo Kwon, Jonathan Roth, Xuanyu Cai, and Wenli Xu"
+author = "Soonwoo Kwon, Jonathan Roth, Xuanyu Cai, and Wenli Xu"
 version = "0.1.0"
 release = "0.1.0"
 
@@ -39,6 +39,8 @@ myst_enable_extensions = [
     "deflist",
     "fieldlist",
     "tasklist",
+    "dollarmath",
+    "amsmath",
 ]
 
 # -- Options for autodoc -----------------------------------------------------
@@ -62,12 +64,15 @@ napoleon_use_rtype = True
 numpydoc_show_class_members = False
 
 # -- Options for intersphinx -------------------------------------------------
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "pandas": ("https://pandas.pydata.org/docs/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
-}
+if os.environ.get("TESTMECHS_DOCS_OFFLINE") == "1":
+    intersphinx_mapping = {}
+else:
+    intersphinx_mapping = {
+        "python": ("https://docs.python.org/3", None),
+        "numpy": ("https://numpy.org/doc/stable/", None),
+        "pandas": ("https://pandas.pydata.org/docs/", None),
+        "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    }
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = "sphinx_rtd_theme"
