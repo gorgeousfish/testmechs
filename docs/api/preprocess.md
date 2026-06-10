@@ -162,25 +162,3 @@ print(norm.original_levels)  # ('control', 'treated')
 transformed = norm.transform(pd.Series(["treated", "control"]))
 print(transformed.tolist())  # [1, 0]
 ```
-
----
-
-## R Package Correspondence
-
-| Python | R | Notes |
-| --- | --- | --- |
-| `remove_missing_from_df()` | `remove_missing_from_df()` | Python has stricter failure semantics |
-| `discretize_y()` | `discretize_y()` (not exported in R) | Public in Python; same logic |
-| `normalize_binary_support()` | (internal to R functions) | Exposed as utility in Python |
-
-### Parameter Name Mapping
-
-| Python parameter | R parameter | Notes |
-| --- | --- | --- |
-| `df` | `data` | Same role |
-| `d` | `d` | Identical |
-| `m` | `m` | Identical |
-| `y` | `y` | Identical |
-| `w` | `w` | Identical |
-| `reg_formula` | `reg_formula` | Same formula syntax |
-| `num_bins` | `num_Ybins` | Different position (argument vs parameter name) |

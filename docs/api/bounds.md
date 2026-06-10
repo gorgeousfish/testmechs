@@ -1,12 +1,13 @@
 # Bound Estimators
 
 This module implements lower bounds on the fraction of $k$-always-takers
-(individuals with $M(1) = M(0) = m_k$) affected by treatment through
-alternative channels, Lee-style partial-identification bounds on the average
-direct effect (ADE), and breakdown-point analysis for defier-share relaxations.
+(individuals with $M(1) = M(0) = m_k$) affected outside the recorded mediator,
+Lee-style partial-identification bounds on the average direct effect (ADE), and
+breakdown-point analysis for defier-share relaxations.
 
-These bounds quantify the **magnitude** of alternative mechanisms after the
-sharp null has been rejected.
+These bounds report estimand-specific quantities under the maintained
+finite-support and restriction choices. Their statistical interpretation follows
+the Testing Mechanisms assumptions.
 
 ## `lb_frac_affected()`
 
@@ -84,7 +85,7 @@ bound = testmechs.lb_frac_affected(
 )
 bound.lower_bound
 #> 0.10654
-# Interpretation: At least 10.7% of never-takers are affected through alternative channels.
+# Interpretation: lower-bound object for the never-taker target group.
 
 # With relaxed defier cap
 bound_relaxed = testmechs.lb_frac_affected(
@@ -128,9 +129,8 @@ the average direct effect of treatment on the outcome for $k$-always-takers.
 Uses Lee-style trimming on the conditional outcome distribution within the
 identified always-taker subpopulation.
 
-The bounds are informative about the **average magnitude** of alternative
-mechanisms for always-takers, complementing the lower bound on the **fraction**
-affected.
+The returned object records endpoint fields, the target always-taker group, and
+diagnostics for the maintained support and restriction.
 
 ### Parameters
 
@@ -174,8 +174,7 @@ ade = testmechs.bounds_ade_ats(
 ade.lower_bound, ade.upper_bound
 #> (-0.05714, 0.24478)
 # Interpretation: The average direct effect for always-takers is partially
-# identified in [-0.057, 0.245]. The interval includes zero but the upper
-# bound indicates a potentially large direct effect.
+# identified in [-0.057, 0.245] for this displayed call.
 ```
 
 ### Notes
@@ -208,12 +207,9 @@ testmechs.breakdown_defier_share(
 ### Description
 
 Finds the defier-share breakdown point: the minimum `max_defiers_share`
-value at which `lb_frac_affected()` returns a lower bound of zero. This is
-the smallest relaxation of monotonicity that eliminates evidence against the
-sharp null of full mediation.
-
-A larger breakdown point indicates stronger robustness: even with substantial
-monotonicity violations, the evidence for alternative mechanisms persists.
+value at which `lb_frac_affected()` returns a lower bound of zero. The returned
+object records the relaxation threshold and bracket diagnostics for that bound
+calculation.
 
 Uses binary search between the minimum compatible defier share and 1.0.
 
@@ -252,8 +248,8 @@ breakdown = testmechs.breakdown_defier_share(
 )
 breakdown.lower_bound
 #> 0.06647
-# Interpretation: Evidence survives up to 6.6% defiers in the population.
-# The paper reports 7% (rounded).
+# Interpretation: defier-share cap reported by the breakdown object.
+# The article compares the rounded value with the method-paper target of 7%.
 ```
 
 ---
@@ -293,28 +289,3 @@ always-taker subpopulation before running bounds.
 ### Returns
 
 `dict[object, float]` — Mapping from mediator level to minimum theta_{kk}.
-
----
-
-## R Package Correspondence
-
-| Python | R | Notes |
-| --- | --- | --- |
-| `lb_frac_affected()` | `lb_frac_affected()` | Same interface; Python uses SciPy LP |
-| `bounds_ade_ats()` | `bounds_ade_ats()` | Same interface; Python requires explicit `allow_min_defiers=True` |
-| `breakdown_defier_share()` | `breakdown_defier_share()` | Same binary-search logic |
-| `theta_kk_min_ordered_monotone()` | Internal R helper | Exposed as public API in Python |
-
-### Parameter Name Mapping
-
-| Python parameter | R parameter | Notes |
-| --- | --- | --- |
-| `df` | `data` | Python also accepts `data_path` for CSV loading |
-| `d` | `d` | Identical |
-| `m` | `m` | Python accepts `Sequence[str]` for vector mediators |
-| `y` | `y` | Identical |
-| `at_group` | `at_group` | Identical |
-| `num_y_bins` | `num_Ybins` | Naming convention difference |
-| `max_defiers_share` | `max_defiers_share` | Identical |
-| `allow_min_defiers` | (implicit +1e-6 relaxation in R) | Python requires explicit opt-in |
-| `reg_formula` | `reg_formula` | Same formula syntax |

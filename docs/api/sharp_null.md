@@ -5,8 +5,8 @@ This module provides hypothesis tests for the sharp null of full mediation:
 $$H_0: Y(1,m) = Y(0,m) \quad \text{for all } m$$
 
 Under this null, treatment $D$ affects outcome $Y$ **only** through mediator $M$.
-If rejected, there must exist alternative mechanisms — direct effects of $D$ on $Y$
-not operating through $M$.
+Rejection, interpreted under the maintained assumptions, provides evidence
+against the recorded mediator as a complete explanation of the treatment effect.
 
 The approach exploits connections to the instrument validity literature: under the
 sharp null plus independence and monotonicity, $D$ is a valid instrument for the
@@ -95,7 +95,7 @@ from importlib.resources import files
 # Load Bursztyn et al. (2020) data
 df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
 
-# Test: does information affect job applications entirely through service sign-up?
+# Test: does service sign-up account for the displayed treatment effect?
 result = testmechs.test_sharp_null(
     df=df, d="condition2", m="signed_up_number", y="applied_out_fl", method="CS"
 )
@@ -103,8 +103,7 @@ result.p_value
 #> 0.01883
 result.reject
 #> True
-# Interpretation: The sharp null is rejected. The information treatment affects
-# job applications through channels beyond service sign-up.
+# Interpretation: The sharp-null result rejects for this displayed call.
 
 # With cluster-robust inference (Baranov et al. 2020)
 df2 = pd.read_csv(files("testmechs.resources.fixtures") / "baranov_mother_data.csv")
@@ -267,17 +266,3 @@ print(f"TV CI: [{ci.lower:.3f}, {ci.upper:.3f}]")
 - Only supports scalar ordered mediators and discrete outcomes.
 - `weight_matrix="avar"` raises a clear error (source-scoped out due to
   singular-matrix failure in the R reference).
-
----
-
-## R Package Correspondence
-
-| Python | R | Notes |
-| --- | --- | --- |
-| `test_sharp_null(method="CS")` | `test_sharp_null(method="CS")` | Same interface |
-| `test_sharp_null(method="ARP")` | `test_sharp_null(method="ARP")` | Same interface |
-| `test_sharp_null(method="FSSTdd")` | `test_sharp_null(method="FSSTdd")` | Same interface |
-| `test_sharp_null(method="FSSTndd")` | `test_sharp_null(method="FSSTndd")` | Same interface |
-| `test_sharp_null(method="K")` | `test_sharp_null(method="K")` | Binary mediator only |
-| `test_sharp_null_cr()` | `test_sharp_null_cr()` | Python uses HiGHS; R uses Gurobi |
-| `ci_TV()` | `ci_TV()` | Python excludes `weight.matrix="avar"` |

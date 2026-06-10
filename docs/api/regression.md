@@ -230,23 +230,3 @@ fig = testmechs.partial_density_plot(
 )
 fig.savefig("adjusted_partial_density.pdf")
 ```
-
----
-
-## R Package Correspondence
-
-| Python | R | Notes |
-| --- | --- | --- |
-| `parse_reg_formula()` | (internal parser in R) | Exposed as public utility in Python |
-| `compute_adjusted_probabilities()` | (internal to R bounds/test functions) | Exposed as public in Python |
-| `compute_adjusted_probability_influences()` | (internal to adjusted tests in R) | Python-specific public API |
-| `compute_adjusted_mediator_masses()` | (internal to R) | Python-specific public API |
-
-### Parameter Mapping
-
-| Python | R | Notes |
-| --- | --- | --- |
-| `reg_formula` | `reg_formula` | Same formula syntax |
-| `d` | `d` | Identical |
-| `m` | `m` | Identical |
-| `y` | `y` | Identical |

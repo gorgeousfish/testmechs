@@ -184,29 +184,3 @@ fig = testmechs.partial_density_plot(
 )
 fig.savefig("partial_density_continuous.pdf")
 ```
-
----
-
-## R Package Correspondence
-
-| Python | R | Notes |
-| --- | --- | --- |
-| `partial_density_data()` | (internal to `partial_density_plot()` in R) | Python separates data from rendering |
-| `partial_density_plot()` | `partial_density_plot()` | Python uses Matplotlib; R uses ggplot2 |
-
-### Parameter Name Mapping
-
-| Python parameter | R parameter | Notes |
-| --- | --- | --- |
-| `df` | `data` | Python also accepts `data_path` |
-| `d` | `d` | Identical |
-| `m` | `m` | Must be scalar binary in both |
-| `y` | `y` | Identical |
-| `plot_nts` | `plot_nts` | Identical |
-| `continuous_y` | `continuous_y` | Identical |
-| `num_grid_points` | `num_grid_points` | Identical |
-| `density_1_label` | `density_1_label` | Identical |
-| `density_0_label` | `density_0_label` | Identical |
-| `num_y_bins` | `num_Ybins` | Naming convention difference |
-| `reg_formula` | `reg_formula` | Same formula syntax |
-| `caption` | (not in R) | Python addition |

@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 # -- Project information -----------------------------------------------------
 project = "testmechs"
-copyright = "2024-2025, Soonwoo Kwon, Jonathan Roth, Xuanyu Cai, and Wenli Xu"
+copyright = "2024-2026, Soonwoo Kwon, Jonathan Roth, Xuanyu Cai, and Wenli Xu"
 author = "Soonwoo Kwon, Jonathan Roth, Xuanyu Cai, and Wenli Xu"
 version = "0.1.0"
 release = "0.1.0"

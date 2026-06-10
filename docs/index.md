@@ -1,7 +1,7 @@
 # testmechs Documentation
 
 **testmechs** is a Python package implementing the Testing Mechanisms framework
-from Kwon and Roth (2024). It provides finite-support sharp-null hypothesis
+from Kwon and Roth (2026). It provides finite-support sharp-null hypothesis
 tests, lower-bound estimators, average direct effect bounds, breakdown-point
 analysis, and partial-density displays for causal mediation analysis.
 
@@ -12,8 +12,9 @@ The package tests the **sharp null hypothesis of full mediation**:
 $$H_0: Y(1, m) = Y(0, m) \quad \text{for all } m$$
 
 Under this null, treatment $D$ affects outcome $Y$ **only** through its effect
-on mediator $M$. If rejected, there must exist alternative mechanisms — direct
-effects of $D$ on $Y$ not operating through $M$.
+on mediator $M$. Rejection, interpreted under the maintained assumptions,
+provides evidence against the recorded mediator as a complete explanation of
+the treatment effect.
 
 The approach connects mediation analysis to the instrument validity literature:
 under the sharp null plus independence and monotonicity, the treatment $D$ is a
@@ -24,8 +25,8 @@ validity then provide tests of the sharp null.
 
 - **Sharp-null tests** — CS (Cox and Shi 2023), ARP (Andrews, Roth, Pakes 2023),
   FSST (Fang, Santos, Shaikh, Torgovitsky 2023), and Kitagawa (2015) procedures
-- **Lower bounds** on the fraction of always-takers affected through alternative channels
-- **Breakdown-point analysis** — minimum defier share to eliminate evidence
+- **Lower bounds** on the fraction of always-takers affected outside the recorded mediator
+- **Breakdown-point analysis** — minimum defier-share relaxation that sets the lower bound to zero
 - **ADE bounds** — Lee-style partial-identification of the average direct effect
 - **Partial-density displays** — visualize how mediator-outcome mass shifts across treatment arms
 - **Cluster-robust inference** for designs with clustered randomization
@@ -38,6 +39,10 @@ validity then provide tests of the sharp null.
 ```bash
 pip install testmechs
 ```
+
+The review-bundle version is not yet available from the public Python Package
+Index. Use the supplied source tree, wheel, or source archive when reproducing
+the accompanying article.
 
 From source:
 
@@ -91,7 +96,6 @@ api/preprocess
 api/regression
 api/contracts
 api/monte_carlo
-api/r_python_mapping
 ```
 
 ## Auto-generated API

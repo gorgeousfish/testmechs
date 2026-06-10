@@ -1,15 +1,19 @@
 # testmechs API Reference
 
-`testmechs` implements the Testing Mechanisms framework (Kwon and Roth, 2024)
-for testing whether treatment effects operate entirely through a specified
-mediator. The package provides sharp-null tests, lower bounds on the fraction
-affected, ADE bounds, breakdown-point analysis, and partial-density displays.
+`testmechs` implements finite-support Testing Mechanisms calculations from
+Kwon and Roth (2026). The package provides sharp-null tests, lower bounds on
+the fraction affected outside the recorded mediator, ADE bounds,
+breakdown-point analysis, and partial-density displays.
 
 ## Installation
 
 ```bash
 pip install testmechs
 ```
+
+The review-bundle version is not yet available from the public Python Package
+Index. Use the supplied source tree, wheel, or source archive when reproducing
+the accompanying article.
 
 From source:
 
@@ -31,7 +35,6 @@ Optional `[plot]` extra adds Matplotlib.
 | [Regression](regression.md) | Adjusted probability estimation | `compute_adjusted_probabilities()`, `parse_reg_formula()` |
 | [Contracts](contracts.md) | Request/result descriptors | `SharedCSVInput`, `SharpNullRequest`, result classes |
 | [Monte Carlo](monte_carlo.md) | Optional simulation helpers | `run_binary_cs_monte_carlo()` |
-| [R-Python Mapping](r_python_mapping.md) | Cross-language reference | Function/parameter correspondence table |
 
 ## Quick Start
 
@@ -43,7 +46,7 @@ from importlib.resources import files
 # Load bundled Bursztyn et al. (2020) data
 df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
 
-# Sharp-null test: does information affect job applications entirely through sign-up?
+# Sharp-null test: does sign-up account for the displayed treatment effect?
 result = testmechs.test_sharp_null(
     df=df, d="condition2", m="signed_up_number", y="applied_out_fl", method="CS"
 )
