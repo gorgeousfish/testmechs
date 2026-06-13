@@ -2,7 +2,7 @@
 
 This module computes and compares Python lower-bound and partial-density
 results against paper-published statistics from the Testing Mechanisms
-manuscript (arXiv:2404.11739v3).  The report verifies that the Python
+method paper (Kwon and Roth 2026).  The report verifies that the Python
 ``testmechs`` package reproduces the paper's empirical claims within
 documented rounding tolerances.
 """

@@ -141,7 +141,7 @@ def test_sharp_null(
 
     Notes
     -----
-    Implements the testing framework from Kwon and Roth (2024) [1]_.
+    Implements the testing framework from Kwon and Roth (2026) [1]_.
     The sharp null H0: Y(1,m) = Y(0,m) for all m implies that
     treatment effects operate entirely through the mediator.
 
@@ -151,8 +151,8 @@ def test_sharp_null(
 
     References
     ----------
-    .. [1] Kwon, S. and Roth, J. (2024). "Testing Mechanisms."
-       arXiv:2404.11739v3.
+    .. [1] Kwon, S. and Roth, J. (2026). "Testing Mechanisms."
+       The Review of Economic Studies, rdag028. doi:10.1093/restud/rdag028.
 
     See Also
     --------
@@ -950,7 +950,7 @@ def ci_TV(
     Notes
     -----
     Implements the confidence-interval construction from Kwon and
-    Roth (2024) [1]_. The total-variation target is defined as
+    Roth (2026) [1]_. The total-variation target is defined as
     eta_k = theta_kk * TV_kk, where theta_kk is the always-taker
     proportion for group k and TV_kk is the TV distance for that
     group. The interval is obtained by inverting the FSST test at
@@ -958,8 +958,8 @@ def ci_TV(
 
     References
     ----------
-    .. [1] Kwon, S. and Roth, J. (2024). "Testing Mechanisms."
-       arXiv:2404.11739v3.
+    .. [1] Kwon, S. and Roth, J. (2026). "Testing Mechanisms."
+       The Review of Economic Studies, rdag028. doi:10.1093/restud/rdag028.
 
     See Also
     --------
@@ -1255,7 +1255,7 @@ def test_sharp_null_cr(
     Notes
     -----
     Implements the confidence-set construction from Kwon and Roth
-    (2024) [1]_. Under the sharp null, the observable joint
+    (2026) [1]_. Under the sharp null, the observable joint
     distributions P(Y=y, M=m | D=d) must be consistent with a
     feasible set of conditional distributions. The LP checks whether
     the bootstrap-perturbed moments remain in this feasible region.
@@ -1266,8 +1266,8 @@ def test_sharp_null_cr(
 
     References
     ----------
-    .. [1] Kwon, S. and Roth, J. (2024). "Testing Mechanisms."
-       arXiv:2404.11739v3.
+    .. [1] Kwon, S. and Roth, J. (2026). "Testing Mechanisms."
+       The Review of Economic Studies, rdag028. doi:10.1093/restud/rdag028.
 
     See Also
     --------
@@ -4061,16 +4061,24 @@ def _arp_honest_test(
         hybrid_kappa=hybrid_kappa,
     )
     eta = float(lin_sol["eta"])
-    reject = bool(eta > lf_cv)
     lambda_vec = np.asarray(lin_sol["lambda"], dtype=float)
+    decision = _arp_hybrid_lf_decision(
+        y_t=y_honest,
+        x_t=x_t,
+        sigma=sigma,
+        eta=eta,
+        lambda_vec=lambda_vec,
+        alpha=alpha,
+        hybrid_kappa=hybrid_kappa,
+        least_favorable_cv=lf_cv,
+    )
     lambda_full = np.zeros(original_moment_count, dtype=float)
     lambda_full[positive_variance] = lambda_vec
-    sigma_b = float(lambda_vec.T @ sigma @ lambda_vec)
-    sigma_b = float(np.sqrt(max(sigma_b, 0.0))) if sigma_b > 1e-12 else 1.0
-    standardized_stat = eta / sigma_b
-    critical_value = lf_cv / sigma_b
+    sigma_b = float(decision["sigma_B"])
+    standardized_stat = float(decision["standardized_stat"])
+    critical_value = float(decision["critical_value"])
     return {
-        "reject": reject,
+        "reject": bool(decision["reject"]),
         "eta": eta,
         "standardized_stat": standardized_stat,
         "critical_value": critical_value,
@@ -4091,6 +4099,7 @@ def _arp_honest_test(
                 "lambda": lambda_full.tolist(),
                 "hybrid_kappa": hybrid_kappa,
                 "alpha": alpha,
+                "hybrid_decision": decision,
                 "simulation_draws": 1000,
                 "simulation_seed": 0,
                 "original_moment_count": original_moment_count,
@@ -4127,6 +4136,509 @@ def _arp_test_delta_lp(
         "delta": np.asarray(result.x[1:], dtype=float),
         "lambda": lambda_vec,
     }
+
+
+def _arp_hybrid_lf_decision(
+    *,
+    y_t: np.ndarray,
+    x_t: np.ndarray,
+    sigma: np.ndarray,
+    eta: float,
+    lambda_vec: np.ndarray,
+    alpha: float,
+    hybrid_kappa: float,
+    least_favorable_cv: float,
+) -> dict[str, object]:
+    sigma_b2 = float(lambda_vec.T @ sigma @ lambda_vec)
+    sigma_b = float(np.sqrt(max(sigma_b2, 0.0))) if sigma_b2 > 1e-12 else 1.0
+    standardized_stat = eta / sigma_b
+    least_favorable_critical_value = least_favorable_cv / sigma_b
+
+    if eta > least_favorable_cv:
+        return {
+            "reject": True,
+            "stage": "least_favorable_pretest",
+            "sigma_B": sigma_b,
+            "standardized_stat": standardized_stat,
+            "critical_value": least_favorable_critical_value,
+            "least_favorable_critical_value": least_favorable_critical_value,
+            "least_favorable_cv": least_favorable_cv,
+        }
+
+    conditional = _arp_conditional_decision(
+        y_t=y_t,
+        x_t=x_t,
+        sigma=sigma,
+        eta=eta,
+        lambda_vec=lambda_vec,
+        modified_size=(alpha - hybrid_kappa) / (1.0 - hybrid_kappa),
+        least_favorable_cv=least_favorable_cv,
+    )
+    return {
+        **conditional,
+        "stage": "conditional_after_lf_pretest",
+        "least_favorable_critical_value": least_favorable_critical_value,
+        "least_favorable_cv": least_favorable_cv,
+    }
+
+
+def _arp_conditional_decision(
+    *,
+    y_t: np.ndarray,
+    x_t: np.ndarray,
+    sigma: np.ndarray,
+    eta: float,
+    lambda_vec: np.ndarray,
+    modified_size: float,
+    least_favorable_cv: float,
+) -> dict[str, object]:
+    tol_lambda = 1e-6
+    active = lambda_vec > tol_lambda
+    active_count = int(active.sum())
+    nuisance_dim = int(x_t.shape[1])
+    x_t_active = x_t[active, :]
+    full_rank = False
+    if active_count > 0 and x_t_active.size > 0:
+        rank_target = min(x_t_active.shape)
+        full_rank = rank_target > 0 and np.linalg.matrix_rank(x_t_active) == rank_target
+    degenerate = active_count != nuisance_dim + 1 or not full_rank
+
+    if degenerate:
+        return _arp_degenerate_conditional_decision(
+            y_t=y_t,
+            x_t=x_t,
+            sigma=sigma,
+            eta=eta,
+            lambda_vec=lambda_vec,
+            modified_size=modified_size,
+            least_favorable_cv=least_favorable_cv,
+        )
+    return _arp_full_rank_conditional_decision(
+        y_t=y_t,
+        x_t=x_t,
+        sigma=sigma,
+        eta=eta,
+        lambda_vec=lambda_vec,
+        active=active,
+        modified_size=modified_size,
+        least_favorable_cv=least_favorable_cv,
+    )
+
+
+def _arp_degenerate_conditional_decision(
+    *,
+    y_t: np.ndarray,
+    x_t: np.ndarray,
+    sigma: np.ndarray,
+    eta: float,
+    lambda_vec: np.ndarray,
+    modified_size: float,
+    least_favorable_cv: float,
+) -> dict[str, object]:
+    sigma_b2 = float(lambda_vec.T @ sigma @ lambda_vec)
+    if abs(sigma_b2) < np.finfo(float).eps:
+        return {
+            "reject": bool(eta > 0.0),
+            "branch": "degenerate_zero_variance",
+            "sigma_B": 1.0,
+            "standardized_stat": eta,
+            "critical_value": 0.0,
+            "zlo": float("-inf"),
+            "zup": float("inf"),
+            "conditional_size": modified_size,
+        }
+    if sigma_b2 < 0.0:
+        raise RuntimeError("ARP dual solution returned a negative variance.")
+
+    sigma_b = float(np.sqrt(sigma_b2))
+    dual = _arp_lp_dual_bounds(
+        y_t=y_t,
+        x_t=x_t,
+        eta=eta,
+        lambda_vec=lambda_vec,
+        sigma=sigma,
+    )
+    maxstat = eta / sigma_b
+    zlo = float(dual["vlo"]) / sigma_b
+    zup = min(float(dual["vup"]), least_favorable_cv) / sigma_b
+    if not (zlo <= maxstat <= zup):
+        return {
+            "reject": False,
+            "branch": "degenerate_outside_conditional_interval",
+            "sigma_B": sigma_b,
+            "standardized_stat": maxstat,
+            "critical_value": float("inf"),
+            "zlo": zlo,
+            "zup": zup,
+            "conditional_size": modified_size,
+        }
+    critical_value = max(
+        0.0,
+        _arp_truncated_normal_quantile(
+            p=1.0 - modified_size,
+            lower=zlo,
+            upper=zup,
+        ),
+    )
+    return {
+        "reject": bool(maxstat > critical_value),
+        "branch": "degenerate_conditional",
+        "sigma_B": sigma_b,
+        "standardized_stat": maxstat,
+        "critical_value": critical_value,
+        "zlo": zlo,
+        "zup": zup,
+        "conditional_size": modified_size,
+    }
+
+
+def _arp_full_rank_conditional_decision(
+    *,
+    y_t: np.ndarray,
+    x_t: np.ndarray,
+    sigma: np.ndarray,
+    eta: float,
+    lambda_vec: np.ndarray,
+    active: np.ndarray,
+    modified_size: float,
+    least_favorable_cv: float,
+) -> dict[str, object]:
+    inactive = ~active
+    sd_vec = np.sqrt(np.diag(sigma))
+    sd_active = sd_vec[active]
+    x_active = x_t[active, :]
+    basis_matrix = np.column_stack([sd_active, x_active])
+    selector_active = np.eye(sigma.shape[0])[active, :]
+    inverse_basis = np.linalg.inv(basis_matrix)
+
+    e1 = np.r_[1.0, np.zeros(int(active.sum()) - 1, dtype=float)]
+    v_b = e1 @ inverse_basis @ selector_active
+    sigma_b2 = float(v_b.T @ sigma @ v_b)
+    if sigma_b2 <= 0.0:
+        return {
+            "reject": bool(eta > 0.0),
+            "branch": "full_rank_zero_variance",
+            "sigma_B": 1.0,
+            "standardized_stat": eta,
+            "critical_value": 0.0,
+            "zlo": float("-inf"),
+            "zup": float("inf"),
+            "conditional_size": modified_size,
+        }
+    sigma_b = float(np.sqrt(sigma_b2))
+
+    if bool(inactive.any()):
+        sd_inactive = sd_vec[inactive]
+        x_inactive = x_t[inactive, :]
+        selector_inactive = np.eye(sigma.shape[0])[inactive, :]
+        gamma_b = np.column_stack([sd_inactive, x_inactive]) @ inverse_basis @ selector_active
+        gamma_b = gamma_b - selector_inactive
+        rho = gamma_b @ sigma @ v_b / sigma_b2
+        center = float(v_b @ y_t)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            bounds = (-(gamma_b @ y_t)) / rho + center
+        if bool(np.any(rho > 0.0)):
+            vlo = float(np.max(bounds[rho > 0.0]))
+        else:
+            vlo = float("-inf")
+        if bool(np.any(rho < 0.0)):
+            vup = float(np.min(bounds[rho < 0.0]))
+        else:
+            vup = float("inf")
+    else:
+        vlo = float("-inf")
+        vup = float("inf")
+
+    zlo = vlo / sigma_b
+    zup = min(vup, least_favorable_cv) / sigma_b
+    maxstat = eta / sigma_b
+    if not (zlo <= maxstat <= zup):
+        return {
+            "reject": False,
+            "branch": "full_rank_outside_conditional_interval",
+            "sigma_B": sigma_b,
+            "standardized_stat": maxstat,
+            "critical_value": float("inf"),
+            "zlo": zlo,
+            "zup": zup,
+            "conditional_size": modified_size,
+        }
+    critical_value = max(
+        0.0,
+        _arp_truncated_normal_quantile(
+            p=1.0 - modified_size,
+            lower=zlo,
+            upper=zup,
+        ),
+    )
+    return {
+        "reject": bool(maxstat > critical_value),
+        "branch": "full_rank_conditional",
+        "sigma_B": sigma_b,
+        "standardized_stat": maxstat,
+        "critical_value": critical_value,
+        "zlo": zlo,
+        "zup": zup,
+        "conditional_size": modified_size,
+    }
+
+
+def _arp_lp_dual_bounds(
+    *,
+    y_t: np.ndarray,
+    x_t: np.ndarray,
+    eta: float,
+    lambda_vec: np.ndarray,
+    sigma: np.ndarray,
+) -> dict[str, float]:
+    sigma_b2 = float(lambda_vec.T @ sigma @ lambda_vec)
+    s_t = (np.eye(len(y_t)) - (sigma @ np.outer(lambda_vec, lambda_vec)) / sigma_b2) @ y_t
+    w_t = np.column_stack([np.sqrt(np.diag(sigma)), x_t])
+    return _arp_vlo_vup_dual(
+        eta=eta,
+        s_t=s_t,
+        lambda_vec=lambda_vec,
+        sigma=sigma,
+        w_t=w_t,
+    )
+
+
+def _arp_vlo_vup_dual(
+    *,
+    eta: float,
+    s_t: np.ndarray,
+    lambda_vec: np.ndarray,
+    sigma: np.ndarray,
+    w_t: np.ndarray,
+) -> dict[str, float]:
+    tol_c = 1e-6
+    tol_equality = 1e-6
+    sigma_b2 = float(lambda_vec.T @ sigma @ lambda_vec)
+    sigma_b = float(np.sqrt(sigma_b2))
+    low_initial = min(-100.0, eta - 20.0 * sigma_b)
+    high_initial = max(100.0, eta + 20.0 * sigma_b)
+    maxiters = 10000
+    switchiters = 10
+
+    check = _arp_check_dual_solution(
+        c=eta,
+        tol=tol_equality,
+        s_t=s_t,
+        lambda_vec=lambda_vec,
+        sigma=sigma,
+        w_t=w_t,
+    )
+    if not check["honest_solution"]:
+        return {"vlo": eta, "vup": float("inf")}
+
+    high_check = _arp_check_dual_solution(
+        c=high_initial,
+        tol=tol_equality,
+        s_t=s_t,
+        lambda_vec=lambda_vec,
+        sigma=sigma,
+        w_t=w_t,
+    )
+    if high_check["honest_solution"]:
+        vup = float("inf")
+    else:
+        vup = _arp_dual_endpoint(
+            lower=eta,
+            upper_initial=high_initial,
+            first_check=high_check,
+            s_t=s_t,
+            lambda_vec=lambda_vec,
+            sigma=sigma,
+            w_t=w_t,
+            tol_c=tol_c,
+            tol_equality=tol_equality,
+            maxiters=maxiters,
+            switchiters=switchiters,
+            upper_endpoint=True,
+        )
+
+    low_check = _arp_check_dual_solution(
+        c=low_initial,
+        tol=tol_equality,
+        s_t=s_t,
+        lambda_vec=lambda_vec,
+        sigma=sigma,
+        w_t=w_t,
+    )
+    if low_check["honest_solution"]:
+        vlo = float("-inf")
+    else:
+        vlo = _arp_dual_endpoint(
+            lower=low_initial,
+            upper_initial=eta,
+            first_check=low_check,
+            s_t=s_t,
+            lambda_vec=lambda_vec,
+            sigma=sigma,
+            w_t=w_t,
+            tol_c=tol_c,
+            tol_equality=tol_equality,
+            maxiters=maxiters,
+            switchiters=switchiters,
+            upper_endpoint=False,
+        )
+
+    return {"vlo": vlo, "vup": vup}
+
+
+def _arp_dual_endpoint(
+    *,
+    lower: float,
+    upper_initial: float,
+    first_check: dict[str, object],
+    s_t: np.ndarray,
+    lambda_vec: np.ndarray,
+    sigma: np.ndarray,
+    w_t: np.ndarray,
+    tol_c: float,
+    tol_equality: float,
+    maxiters: int,
+    switchiters: int,
+    upper_endpoint: bool,
+) -> float:
+    sigma_b2 = float(lambda_vec.T @ sigma @ lambda_vec)
+    b_vec = (sigma @ lambda_vec) / sigma_b2
+    linprog = first_check
+    mid = _arp_dual_solution_midpoint(linprog["solution"], s_t=s_t, b_vec=b_vec)
+    dif = 0.0
+    iters = 1
+    while iters < maxiters:
+        linprog = _arp_check_dual_solution(
+            c=mid,
+            tol=tol_equality,
+            s_t=s_t,
+            lambda_vec=lambda_vec,
+            sigma=sigma,
+            w_t=w_t,
+        )
+        if linprog["honest_solution"]:
+            break
+        iters += 1
+        if iters >= switchiters:
+            dif = tol_c + 1.0
+            break
+        mid = _arp_dual_solution_midpoint(linprog["solution"], s_t=s_t, b_vec=b_vec)
+
+    if upper_endpoint:
+        low = lower
+        high = mid
+        while dif > tol_c and iters < maxiters:
+            iters += 1
+            mid = (high + low) / 2.0
+            if _arp_check_dual_solution(
+                c=mid,
+                tol=tol_equality,
+                s_t=s_t,
+                lambda_vec=lambda_vec,
+                sigma=sigma,
+                w_t=w_t,
+            )["honest_solution"]:
+                low = mid
+            else:
+                high = mid
+            dif = high - low
+        return float(mid)
+
+    low = mid
+    high = upper_initial
+    while dif > tol_c and iters < maxiters:
+        mid = (low + high) / 2.0
+        iters += 1
+        if _arp_check_dual_solution(
+            c=mid,
+            tol=tol_equality,
+            s_t=s_t,
+            lambda_vec=lambda_vec,
+            sigma=sigma,
+            w_t=w_t,
+        )["honest_solution"]:
+            high = mid
+        else:
+            low = mid
+        dif = high - low
+    return float(mid)
+
+
+def _arp_dual_solution_midpoint(
+    solution: object,
+    *,
+    s_t: np.ndarray,
+    b_vec: np.ndarray,
+) -> float:
+    solution_array = np.asarray(solution, dtype=float)
+    numerator = _round_near_zero(float(solution_array @ s_t))
+    denominator = 1.0 - float(solution_array @ b_vec)
+    return float(numerator / denominator)
+
+
+def _arp_check_dual_solution(
+    *,
+    c: float,
+    tol: float,
+    s_t: np.ndarray,
+    lambda_vec: np.ndarray,
+    sigma: np.ndarray,
+    w_t: np.ndarray,
+) -> dict[str, object]:
+    result = _arp_max_program(
+        s_t=s_t,
+        lambda_vec=lambda_vec,
+        sigma=sigma,
+        w_t=w_t,
+        c=c,
+    )
+    honest_solution = bool(abs(c - (-float(result["optimum"]))) <= tol)
+    return {
+        **result,
+        "honest_solution": honest_solution,
+    }
+
+
+def _arp_max_program(
+    *,
+    s_t: np.ndarray,
+    lambda_vec: np.ndarray,
+    sigma: np.ndarray,
+    w_t: np.ndarray,
+    c: float,
+) -> dict[str, object]:
+    sigma_b2 = float(lambda_vec.T @ sigma @ lambda_vec)
+    objective = s_t + (sigma @ lambda_vec) * (c / sigma_b2)
+    result = linprog(
+        c=-objective,
+        A_eq=w_t.T,
+        b_eq=np.r_[1.0, np.zeros(w_t.shape[1] - 1, dtype=float)],
+        bounds=[(0.0, None)] * len(s_t),
+        method="highs",
+    )
+    if not result.success:
+        raise RuntimeError(f"ARP dual LP failed: {result.message}")
+    return {
+        "optimum": float(result.fun),
+        "solution": np.asarray(result.x, dtype=float),
+    }
+
+
+def _round_near_zero(x: float) -> float:
+    return 0.0 if abs(x) < np.finfo(float).eps ** 0.75 else x
+
+
+def _arp_truncated_normal_quantile(
+    *,
+    p: float,
+    lower: float,
+    upper: float,
+) -> float:
+    lower_cdf = float(norm.cdf(lower))
+    upper_cdf = float(norm.cdf(upper))
+    target = lower_cdf + p * (upper_cdf - lower_cdf)
+    target = min(max(target, np.nextafter(0.0, 1.0)), np.nextafter(1.0, 0.0))
+    return float(norm.ppf(target))
 
 
 def _arp_least_favorable_cv(

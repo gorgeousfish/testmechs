@@ -92,7 +92,7 @@ and writing one planned suite chunk in developer scripts. All writers refuse to 
 Paper Monte Carlo reproduction report payloads and frame records preserve NumPy
 boolean diagnostics and infinite boundary markers. Non-finite values are written
 as strict-JSON-safe markers such as `positive_infinity`, `negative_infinity`, or
-`null`, while arrays are converted to ordinary JSON lists. integer-valued numeric count strings such as `10.0` are normalized for display. Long reader-facing Monte Carlo method, paper-case, case-id labels, and structured display values are middle-truncated only in the display table; strict rows and frame records retain the complete labels and structured payload values.
+`null`, while arrays are converted to ordinary JSON lists. Integer-valued numeric count strings such as `10.0` are normalized for display. Long reader-facing Monte Carlo method, paper-case, case-id labels, and structured display values are middle-truncated only in the display table; strict rows and frame records retain the complete labels and structured payload values.
 
 Reader-facing Monte Carlo rerun command fields are truncated only in the display `next_action` cell; strict rows and frame records retain the complete executable command strings. Boolean, negative, non-integer, or nonnumeric count values fail before display formatting. Rate, precision, and evidence-count cells remain compact strict-JSON strings rather than Python or NumPy object representations. Very long JSON display cells are capped while strict payloads stay complete. `PaperMonteCarloReproductionRequest` records the evidence directory, table and fixture inputs, schedule seed, cell chunk size, replication budgets, filters, tolerance settings, owner, and rerun command used to build a report.
 

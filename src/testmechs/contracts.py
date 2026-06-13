@@ -1,6 +1,6 @@
-"""Request descriptors and support-boundary contracts for Testing Mechanisms.
+"""Request descriptors and support-scope contracts for Testing Mechanisms.
 
-This module defines the immutable request dataclasses and support-boundary
+This module defines the immutable request dataclasses and support-scope
 contract objects that form the validation and declaration layer of
 ``testmechs``.  Each request class:
 
@@ -10,7 +10,7 @@ contract objects that form the validation and declaration layer of
 - Exposes a ``comparison_view()`` method returning a strict-JSON-safe
   dictionary suitable for reproducibility logs and request-deduplication.
 
-Support-boundary contracts (``RegressionAdjustmentSupport``,
+Support-scope contracts (``RegressionAdjustmentSupport``,
 ``SharpNullDiagnosticsSupport``, ``PartialDensitySupport``,
 ``CellCountDiagnosticsSupport``, ``BoundsSupport``) declare the scope,
 diagnostic schema, and release-status metadata for each public surface,
@@ -41,15 +41,15 @@ PaperReproductionE2ERequest
 PaperReproductionResourceManifestRequest
     Request for the reproduction resource manifest.
 RegressionAdjustmentSupport
-    Release-boundary contract for adjusted regression paths.
+    Release-scope contract for adjusted regression paths.
 SharpNullDiagnosticsSupport
-    Release-boundary contract for sharp-null diagnostic schemas.
+    Release-scope contract for sharp-null diagnostic schemas.
 PartialDensitySupport
-    Release-boundary contract for partial-density paths.
+    Release-scope contract for partial-density paths.
 CellCountDiagnosticsSupport
-    Release-boundary contract for cell-count diagnostics.
+    Release-scope contract for cell-count diagnostics.
 BoundsSupport
-    Release-boundary contract for bounds paths.
+    Release-scope contract for bounds paths.
 """
 
 from __future__ import annotations
@@ -1088,7 +1088,7 @@ class PaperReproductionResourceManifestRequest:
 
 @dataclass(frozen=True)
 class RegressionAdjustmentSupport:
-    """Release-boundary contract for adjusted regression paths.
+    """Release-scope contract for adjusted regression paths.
 
     Declares the supported formula kinds, scope narrative, release-blocker
     status, and traceability anchors for a regression-adjusted estimation
@@ -1142,7 +1142,7 @@ class RegressionAdjustmentSupport:
 
 @dataclass(frozen=True)
 class SharpNullDiagnosticsSupport:
-    """Release-boundary contract for sharp-null diagnostic schemas.
+    """Release-scope contract for sharp-null diagnostic schemas.
 
     Declares the diagnostic fields, row-level field schemas, scope,
     and traceability anchors for sharp-null test diagnostics.
@@ -1206,7 +1206,7 @@ class SharpNullDiagnosticsSupport:
 
 @dataclass(frozen=True)
 class PartialDensitySupport:
-    """Release-boundary contract for partial-density paths.
+    """Release-scope contract for partial-density paths.
 
     Declares diagnostic fields, row schemas, scope, and traceability
     for the partial-density data and plotting surfaces.
@@ -1270,7 +1270,7 @@ class PartialDensitySupport:
 
 @dataclass(frozen=True)
 class CellCountDiagnosticsSupport:
-    """Release-boundary contract for cell-count diagnostics.
+    """Release-scope contract for cell-count diagnostics.
 
     Declares the support-grid and count contracts, scope, and
     traceability for cell-count diagnostic reporting.
@@ -1319,7 +1319,7 @@ class CellCountDiagnosticsSupport:
 
 @dataclass(frozen=True)
 class BoundsSupport:
-    """Release-boundary contract for bounds estimation paths.
+    """Release-scope contract for bounds estimation paths.
 
     Declares the diagnostic fields, row schemas, scope, and
     traceability anchors for lower-bound, breakdown, and ADE bounds
@@ -1383,7 +1383,7 @@ class BoundsSupport:
 
 
 def bounds_support_contract() -> tuple[BoundsSupport, ...]:
-    """Return the release-facing support boundary for bounds paths."""
+    """Return the release-facing support scope for bounds paths."""
 
     paper_anchor = (
         "manuscript/sources/arxiv-2404.11739v3/draft.tex:230-259,837-904,906-933; "
@@ -1886,7 +1886,7 @@ def bounds_support_contract() -> tuple[BoundsSupport, ...]:
 
 
 def bounds_support_frame() -> list[dict[str, object]]:
-    """Return a serializable release-boundary table for bounds paths."""
+    """Return a serializable release-scope table for bounds paths."""
 
     return [contract.to_dict() for contract in bounds_support_contract()]
 
@@ -1937,7 +1937,7 @@ def bounds_diagnostic_schema_frame() -> list[dict[str, object]]:
 
 
 def regression_adjustment_support_contract() -> tuple[RegressionAdjustmentSupport, ...]:
-    """Return the release-facing support boundary for adjusted regression paths."""
+    """Return the release-facing support scope for adjusted regression paths."""
 
     paper_anchor = (
         "manuscript/sources/arxiv-2404.11739v3/draft.tex:391-438,480-568; "
@@ -2101,13 +2101,13 @@ def regression_adjustment_support_contract() -> tuple[RegressionAdjustmentSuppor
 
 
 def regression_adjustment_support_frame() -> list[dict[str, object]]:
-    """Return a serializable release-boundary table for adjusted regression paths."""
+    """Return a serializable release-scope table for adjusted regression paths."""
 
     return [contract.to_dict() for contract in regression_adjustment_support_contract()]
 
 
 def sharp_null_diagnostics_support_contract() -> tuple[SharpNullDiagnosticsSupport, ...]:
-    """Return the release-facing diagnostic boundary for sharp-null paths."""
+    """Return the release-facing diagnostic scope for sharp-null paths."""
 
     paper_anchor = (
         "manuscript/sources/arxiv-2404.11739v3/draft.tex:230-337; "
@@ -2238,7 +2238,7 @@ def sharp_null_diagnostics_support_contract() -> tuple[SharpNullDiagnosticsSuppo
 
 
 def sharp_null_diagnostics_support_frame() -> list[dict[str, object]]:
-    """Return a serializable release-boundary table for sharp-null diagnostics."""
+    """Return a serializable release-scope table for sharp-null diagnostics."""
 
     return [
         contract.to_dict()
@@ -2292,7 +2292,7 @@ def sharp_null_diagnostic_schema_frame() -> list[dict[str, object]]:
 
 
 def partial_density_support_contract() -> tuple[PartialDensitySupport, ...]:
-    """Return the release-facing support boundary for partial-density paths."""
+    """Return the release-facing support scope for partial-density paths."""
 
     paper_anchor = (
         "manuscript/sources/arxiv-2404.11739v3/draft.tex:657-673; "
@@ -2540,7 +2540,7 @@ def partial_density_support_contract() -> tuple[PartialDensitySupport, ...]:
 
 
 def partial_density_support_frame() -> list[dict[str, object]]:
-    """Return a serializable release-boundary table for partial-density paths."""
+    """Return a serializable release-scope table for partial-density paths."""
 
     return [contract.to_dict() for contract in partial_density_support_contract()]
 
@@ -2591,7 +2591,7 @@ def partial_density_diagnostic_schema_frame() -> list[dict[str, object]]:
 
 
 def cell_count_diagnostics_support_contract() -> tuple[CellCountDiagnosticsSupport, ...]:
-    """Return the release-facing support boundary for cell-count diagnostics."""
+    """Return the release-facing support scope for cell-count diagnostics."""
 
     paper_anchor = (
         "manuscript/sources/arxiv-2404.11739v3/draft.tex:1094-1156; cells are support points "
@@ -2644,7 +2644,7 @@ def cell_count_diagnostics_support_contract() -> tuple[CellCountDiagnosticsSuppo
 
 
 def cell_count_diagnostics_support_frame() -> list[dict[str, object]]:
-    """Return a serializable release-boundary table for cell-count diagnostics."""
+    """Return a serializable release-scope table for cell-count diagnostics."""
 
     return [
         contract.to_dict() for contract in cell_count_diagnostics_support_contract()

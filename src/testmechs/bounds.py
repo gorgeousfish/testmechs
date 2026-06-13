@@ -20,8 +20,9 @@ The estimators support:
 
 References
 ----------
-Kwon, Y. and Roth, J. (2024). "Testing Mechanisms."
-    *arXiv preprint arXiv:2404.11739v3*.
+Kwon, S. and Roth, J. (2026). "Testing Mechanisms."
+    *The Review of Economic Studies*, rdag028.
+    doi:10.1093/restud/rdag028.
 """
 
 from __future__ import annotations
@@ -86,7 +87,7 @@ def theta_kk_min_ordered_monotone(
 
     Notes
     -----
-    Implements the closed-form theta_{kk}^{min} from Kwon and Roth (2024),
+    Implements the closed-form theta_{kk}^{min} from Kwon and Roth (2026),
     which equals max(P(M=k|D=1) - survival_gap_k, 0) where survival_gap_k
     is the treated-minus-control survival difference at level k.
 
@@ -492,7 +493,7 @@ def lb_frac_affected(
 
     Notes
     -----
-    Implements the lower-bound estimator from Kwon and Roth (2024,
+    Implements the lower-bound estimator from Kwon and Roth (2026,
     Section 3).  Uses linear programming for vector mediators or
     nonzero defier caps; uses the closed-form ordered-monotone formula
     for binary scalar mediators with zero defier share.
@@ -983,7 +984,7 @@ def bounds_ade_ats(
 
     Notes
     -----
-    Implements the ADE bounds from Kwon and Roth (2024, Section 4).
+    Implements the ADE bounds from Kwon and Roth (2026, Section 4).
     The trimming fraction equals theta_{kk}^{min} / P(M=k | D=d).
     When theta_{kk}^{min} is zero the bounds have no bite and
     ``None`` is returned for both endpoints.

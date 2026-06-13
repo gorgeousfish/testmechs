@@ -1,24 +1,27 @@
 # testmechs API Reference
 
-`testmechs` implements finite-support Testing Mechanisms calculations from
-Kwon and Roth (2026). The package provides sharp-null tests, lower bounds on
-the fraction affected outside the recorded mediator, ADE bounds,
+`testmechs` implements selected finite-support Testing Mechanisms calculations
+from Kwon and Roth (2026). The package provides sharp-null tests, lower bounds
+on the fraction affected outside the recorded mediator, ADE bounds,
 breakdown-point analysis, and partial-density displays.
 
 ## Installation
-
-```bash
-pip install testmechs
-```
 
 The review-bundle version is not yet available from the public Python Package
 Index. Use the supplied source tree, wheel, or source archive when reproducing
 the accompanying article.
 
-From source:
+From the supplied source tree:
 
 ```bash
 pip install -e ".[plot]"
+```
+
+After a public package-index release, the runtime package can be installed with:
+
+```bash
+pip install testmechs
+pip install "testmechs[plot]"
 ```
 
 **Dependencies**: NumPy, pandas, SciPy, OSQP.
@@ -34,6 +37,7 @@ Optional `[plot]` extra adds Matplotlib.
 | [Preprocessing](preprocess.md) | Data cleaning and discretization | `remove_missing_from_df()`, `discretize_y()` |
 | [Regression](regression.md) | Adjusted probability estimation | `compute_adjusted_probabilities()`, `parse_reg_formula()` |
 | [Contracts](contracts.md) | Request/result descriptors | `SharedCSVInput`, `SharpNullRequest`, result classes |
+| [R-to-Python Mapping](r_python_mapping.md) | Historical R surface to Python review-bundle API | `test_sharp_null()`, `lb_frac_affected()`, `bounds_ade_ats()` |
 | [Monte Carlo](monte_carlo.md) | Optional simulation helpers | `run_binary_cs_monte_carlo()` |
 
 ## Quick Start
@@ -45,6 +49,9 @@ from importlib.resources import files
 
 # Load bundled Bursztyn et al. (2020) data
 df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
+
+# The article target table uses the restricted analysis frame with non-missing
+# `index`; that row reports 0.10678 and displays as 10.7%.
 
 # Sharp-null test: does sign-up account for the displayed treatment effect?
 result = testmechs.test_sharp_null(
@@ -103,7 +110,7 @@ request = testmechs.SharpNullRequest(dataset=dataset, method="CS")
 
 ## Result Object Methods
 
-All statistical result objects provide:
+Main article-facing statistical result objects provide:
 
 - **`to_dict()`** — Strict-JSON-safe dictionary (replaces NaN/Inf with status fields)
 - **`to_frame()`** — One-row pandas DataFrame summary

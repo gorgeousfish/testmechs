@@ -7321,7 +7321,6 @@ class MonteCarloContracts:
         results: list[MonteCarloBenchmarkPlanRunResult] = []
         for plan in self.empirical_mixture_benchmark_suite_plans(
             replications=paper_replications,
-            method=method,
             mediator=mediator,
             design=design,
             table=table,
@@ -7330,6 +7329,8 @@ class MonteCarloContracts:
             t_values=t_values,
         ):
             method_seed = int(seed_rng.integers(low=0, high=np.iinfo(np.uint32).max, dtype=np.uint32))
+            if method is not None and plan.method != method:
+                continue
             if cell_start >= len(plan.executable_cells):
                 continue
             indexed_manifest = _cell_index_slice_manifest_from_plan(
@@ -16280,6 +16281,7 @@ def write_paper_empirical_mixture_benchmark_suite_chunk_evidence(
             f"{path} already exists; pass overwrite=True to replace it."
         )
 
+    started_at = time.perf_counter()
     result = run_paper_empirical_mixture_benchmark_suite_chunk(
         tables_dir=tables_dir,
         fixtures_dir=fixtures_dir,
@@ -16302,10 +16304,15 @@ def write_paper_empirical_mixture_benchmark_suite_chunk_evidence(
         cell_count_absolute_tolerance=cell_count_absolute_tolerance,
         source_mixture_absolute_tolerance=source_mixture_absolute_tolerance,
     )
+    elapsed_seconds = (
+        float(runtime_seconds)
+        if runtime_seconds is not None
+        else time.perf_counter() - started_at
+    )
     payload = result.to_dict(
         owner=owner,
         rerun_command=rerun_command,
-        runtime_seconds=runtime_seconds,
+        runtime_seconds=elapsed_seconds,
     )
     _write_monte_carlo_json_atomic(path, payload)
     return payload

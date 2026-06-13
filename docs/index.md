@@ -1,9 +1,10 @@
 # testmechs Documentation
 
-**testmechs** is a Python package implementing the Testing Mechanisms framework
-from Kwon and Roth (2026). It provides finite-support sharp-null hypothesis
-tests, lower-bound estimators, average direct effect bounds, breakdown-point
-analysis, and partial-density displays for causal mediation analysis.
+**testmechs** is a Python package implementing selected finite-support Testing
+Mechanisms calculations from Kwon and Roth (2026). It provides sharp-null
+hypothesis tests, lower-bound estimators, average direct effect bounds,
+breakdown-point analysis, and partial-density displays for causal mediation
+analysis.
 
 ## Methodology
 
@@ -32,23 +33,26 @@ validity then provide tests of the sharp null.
 - **Cluster-robust inference** for designs with clustered randomization
 - **Vector mediators** with elementwise monotonicity
 - **Regression adjustment** for controls, fixed effects, and IV designs
-- **Strict-JSON exports** — all result objects provide `to_dict()`, `to_frame()`, and notebook HTML views
+- **Article-facing exports** — main sharp-null, bound, ADE, confidence-interval, and partial-density result objects provide strict-JSON, table, and notebook views
 
 ## Installation
-
-```bash
-pip install testmechs
-```
 
 The review-bundle version is not yet available from the public Python Package
 Index. Use the supplied source tree, wheel, or source archive when reproducing
 the accompanying article.
 
-From source:
+From the supplied source tree:
 
 ```bash
 cd packages/python/testmechs-py
 pip install -e ".[plot]"
+```
+
+After a public package-index release, the runtime package can be installed with:
+
+```bash
+pip install testmechs
+pip install "testmechs[plot]"
 ```
 
 **Dependencies**: NumPy, pandas, SciPy, OSQP.
@@ -63,6 +67,9 @@ from importlib.resources import files
 
 # Load bundled empirical dataset (Bursztyn et al. 2020)
 df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
+
+# The article target table uses the restricted analysis frame with non-missing
+# `index`; that row reports 0.10678 and displays as 10.7%.
 
 # Test the sharp null of full mediation
 result = testmechs.test_sharp_null(
@@ -95,6 +102,7 @@ api/partial_density
 api/preprocess
 api/regression
 api/contracts
+api/r_python_mapping
 api/monte_carlo
 ```
 

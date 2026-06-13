@@ -78,6 +78,9 @@ import pandas as pd
 
 df = pd.read_csv(files("testmechs.resources.fixtures") / "burstzyn_data.csv")
 
+# The article target table uses the restricted analysis frame with non-missing
+# `index`; that row reports 0.10678 and displays as 10.7%.
+
 # Lower bound on fraction of never-takers (M=0 under both) affected
 bound = testmechs.lb_frac_affected(
     df=df, d="condition2", m="signed_up_number", y="applied_out_fl",
