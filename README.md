@@ -276,7 +276,8 @@ report.summary["max_absolute_difference"]
 
 All 4 displayed empirical targets pass within the 0.005 tolerance on the
 proportion scale. From a full source checkout, regenerate the displayed article
-calculations from the repository root:
+calculations from the repository root after installing the package in the active
+Python environment:
 
 ```bash
 python3 manuscript/replication/run_replication.py --overwrite
@@ -291,6 +292,9 @@ python3 -m venv .venv-testmechs-review
 python3 -m pip install -e "package/source[plot]"
 python3 replication/run_replication.py --overwrite
 ```
+
+Use this bundle-local route for a fresh reviewer bundle. It creates its own
+virtual environment and does not require source-checkout paths.
 
 The replication entry point regenerates the empirical target table, request
 view, sharp-null, lower-bound, ADE-bound, and partial-density example fragments.
