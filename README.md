@@ -384,9 +384,9 @@ and the software:
 
 Kwon, S., & Roth, J. (2026). Testing Mechanisms. *The Review of Economic Studies*, rdag028. https://doi.org/10.1093/restud/rdag028
 
-Bursztyn, L., González, A. L., & Yanagizawa-Drott, D. (2020). Misperceived Social Norms: Women Working Outside the Home in Saudi Arabia. *American Economic Review*, 110(10), 2997–3029.
+Bursztyn, L., González, A. L., & Yanagizawa-Drott, D. (2020). Misperceived Social Norms: Women Working Outside the Home in Saudi Arabia. *American Economic Review*, 110(10), 2997–3029. https://doi.org/10.1257/aer.20180975
 
-Baranov, V., Bhalotra, S., Biroli, P., & Maselko, J. (2020). Maternal Depression, Women's Empowerment, and Parental Investment: Evidence from a Randomized Controlled Trial. *American Economic Review*, 110(3), 824–859.
+Baranov, V., Bhalotra, S., Biroli, P., & Maselko, J. (2020). Maternal Depression, Women's Empowerment, and Parental Investment: Evidence from a Randomized Controlled Trial. *American Economic Review*, 110(3), 824–859. https://doi.org/10.1257/aer.20180511
 
 ### Package Authors
 
