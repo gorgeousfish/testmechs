@@ -11,8 +11,8 @@ requires-python = ">=3.9"
 license = "AGPL-3.0-or-later"
 license-files = ["LICENSE.md"]
 authors = [
-  {name = "Soonwoo Kwon", email = "soonwoo_kwon@brown.edu"},
-  {name = "Jonathan Roth", email = "jonathan_roth@brown.edu"},
+  {name = "Xuanyu Cai", email = "xuanyuCAI@outlook.com"},
+  {name = "Wenli Xu", email = "wlxu@cityu.edu.mo"},
 ]
 maintainers = [
   {name = "Xuanyu Cai", email = "xuanyuCAI@outlook.com"},
