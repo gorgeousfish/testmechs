@@ -4,19 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "testmechs"
-version = "0.1.0"
+version = "0.1.2"
 description = "Python implementation of selected finite-support Testing Mechanisms tests and bounds."
 readme = "README.md"
 requires-python = ">=3.9"
-license = "AGPL-3.0-or-later"
+license = "AGPL-3.0"
 license-files = ["LICENSE.md"]
 authors = [
-  {name = "Xuanyu Cai", email = "xuanyuCAI@outlook.com"},
-  {name = "Wenli Xu", email = "wlxu@cityu.edu.mo"},
+  {name = "Xuanyu Cai"},
+  {name = "Wenli Xu"},
 ]
 maintainers = [
-  {name = "Xuanyu Cai", email = "xuanyuCAI@outlook.com"},
-  {name = "Wenli Xu", email = "wlxu@cityu.edu.mo"},
+  {name = "Xuanyu Cai"},
+  {name = "Wenli Xu"},
 ]
 keywords = [
   "causal-inference",
@@ -27,7 +27,7 @@ keywords = [
   "econometrics",
 ]
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Science/Research",
   "Natural Language :: English",
   "Operating System :: OS Independent",
@@ -49,11 +49,10 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/caicxy/testmechs"
-Homepage = "https://github.com/caicxy/testmechs"
-"Bug Tracker" = "https://github.com/caicxy/testmechs/issues"
+Repository = "https://github.com/gorgeousfish/testmechs"
+Homepage = "https://github.com/gorgeousfish/testmechs"
+"Bug Tracker" = "https://github.com/gorgeousfish/testmechs/issues"
 "Method paper" = "https://doi.org/10.1093/restud/rdag028"
-"Method-paper replication" = "https://zenodo.org/records/18946845"
 
 [project.optional-dependencies]
 plot = ["matplotlib>=3.8"]

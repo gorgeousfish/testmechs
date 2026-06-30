@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - 2024-XX-XX
+## [0.1.0] - 2026-06-30
 
 ### Added
 - Initial release of `testmechs` Python package.
@@ -22,3 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Paper reproduction helpers.
 - Bundled empirical datasets (Baranov, Bursztyn, Kerwin).
 - Complete R-Python numerical parity verification suite.
+- Frozen request/result dataclass architecture with JSON-safe serialization.
+- ReadTheDocs documentation with interpretation guide.
+- PyPI-ready packaging (requires Python ≥ 3.9).

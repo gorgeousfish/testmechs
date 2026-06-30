@@ -4,7 +4,7 @@
 
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE.md)
-[![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-green.svg)](https://github.com/caicxy/testmechs)
+[![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-green.svg)](https://github.com/gorgeousfish/testmechs)
 
 Python implementation of selected finite-support Testing Mechanisms calculations
 from Kwon and Roth (2026), for testing whether treatment effects operate entirely
@@ -353,7 +353,7 @@ and the software:
 
 **Software (APA)**:
 
-> Cai, X., & Xu, W. (2026). *testmechs: Testing Mechanisms in Python* (Version 0.1.0) [Computer software]. GitHub. https://github.com/caicxy/testmechs
+> Cai, X., & Xu, W. (2026). *testmechs: Testing Mechanisms in Python* (Version 0.1.0) [Computer software]. GitHub. https://github.com/gorgeousfish/testmechs
 
 ### BibTeX
 
@@ -375,7 +375,7 @@ and the software:
   title = {testmechs: Testing Mechanisms in Python},
   year = {2026},
   version = {0.1.0},
-  url = {https://github.com/caicxy/testmechs},
+  url = {https://github.com/gorgeousfish/testmechs},
   note = {Python package implementing the testing mechanisms framework of Kwon and Roth (2026)}
 }
 ```
