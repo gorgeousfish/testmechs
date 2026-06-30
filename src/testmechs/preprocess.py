@@ -267,7 +267,7 @@ def ordered_binary_support_levels(series: pd.Series, *, column: str) -> tuple[An
     if len(levels) != 2:
         raise ValueError(f"{column} must contain exactly two support levels.")
     _reject_nonfinite_numeric_support_levels(levels, column=column)
-    return tuple(sorted(levels, key=_binary_support_sort_key))
+    return tuple(sorted(levels, key=_binary_support_sort_key))  # type: ignore[return-value]
 
 
 def discretize_y(yvec: pd.Series, num_bins: int) -> pd.Series:
@@ -554,8 +554,8 @@ def build_cell_count_diagnostics(
         },
     }
     if support_diagnostics is not None:
-        diagnostics.update(support_diagnostics)
-    return _json_safe_diagnostic_payload(diagnostics)
+        diagnostics.update(support_diagnostics)  # type: ignore[arg-type]
+    return _json_safe_diagnostic_payload(diagnostics)  # type: ignore[return-value]
 
 
 def _cell_count_records(
@@ -717,7 +717,7 @@ def _observed_category_series(series: pd.Series) -> pd.Series:
 
 def _binary_support_sort_key(value: object) -> tuple[str, str]:
     """Sort key for binary support levels."""
-    return _support_sort_key(value)
+    return _support_sort_key(value)  # type: ignore[return-value]
 
 
 def _support_sort_key(value: object) -> tuple[object, ...]:

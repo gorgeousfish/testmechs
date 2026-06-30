@@ -160,7 +160,7 @@ class SharpNullResult:
     test_stat: float
     critical_value: float
     p_value: float
-    beta: object
+    beta_observed: list[float]
     approximation: str
     diagnostics: dict[str, Any]
 ```
@@ -173,7 +173,7 @@ class SharpNullResult:
 | `test_stat` | `float` | Observed test statistic. |
 | `critical_value` | `float` | Critical value at alpha. |
 | `p_value` | `float` | p-value of the test. |
-| `beta` | `object` | Observed nuisance parameter vector. |
+| `beta_observed` | `list[float]` | Observed moment-inequality beta vector. |
 | `approximation` | `str` | Approximation method label. |
 | `diagnostics` | `dict` | Method-specific solver metadata. |
 

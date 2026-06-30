@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from collections.abc import Callable, Mapping, Sequence
 from itertools import combinations
 import math
@@ -228,7 +229,7 @@ def test_sharp_null(
     if vector_mediator:
         mediator_levels = _ordered_vector_support_values(cleaned_df, mediator_columns)
     else:
-        mediator_levels = _ordered_support_values(cleaned_df[mediator_columns[0]])
+        mediator_levels = _ordered_support_values(cleaned_df[mediator_columns[0]])  # type: ignore[assignment]
         _validate_scalar_ordered_mediator_support(
             series=cleaned_df[mediator_columns[0]],
             levels=mediator_levels,
@@ -383,7 +384,7 @@ def test_sharp_null(
         diagnostics = build_cell_count_diagnostics(
             df=analysis_df,
             d=d,
-            m=m,
+            m=m,  # type: ignore[arg-type]
             y="_tm_y_processed",
             cluster=cluster,
             requested_num_y_bins=requested_num_y_bins,
@@ -412,9 +413,9 @@ def test_sharp_null(
             method=method,
             null_hypothesis="Y(0,m) = Y(1,m) for all mediator support points",
             reject=bool(fsst_result["reject"]),
-            test_stat=float(fsst_result["test_stat"]),
-            critical_value=float(fsst_result["critical_value"]),
-            p_value=float(fsst_result["p_value"]),
+            test_stat=float(fsst_result["test_stat"]),  # type: ignore[arg-type]
+            critical_value=float(fsst_result["critical_value"]),  # type: ignore[arg-type]
+            p_value=float(fsst_result["p_value"]),  # type: ignore[arg-type]
             beta_observed=beta_observed.tolist(),
             approximation=(
                 "FSST bootstrap moment-selection runner using the paper's "
@@ -499,7 +500,7 @@ def test_sharp_null(
         diagnostics = build_cell_count_diagnostics(
             df=analysis_df,
             d=d,
-            m=m,
+            m=m,  # type: ignore[arg-type]
             y="_tm_y_processed",
             cluster=cluster,
             requested_num_y_bins=requested_num_y_bins,
@@ -528,8 +529,8 @@ def test_sharp_null(
             method="ARP",
             null_hypothesis="Y(0,m) = Y(1,m) for all mediator support points",
             reject=bool(arp_result["reject"]),
-            test_stat=float(arp_result["standardized_stat"]),
-            critical_value=float(arp_result["critical_value"]),
+            test_stat=float(arp_result["standardized_stat"]),  # type: ignore[arg-type]
+            critical_value=float(arp_result["critical_value"]),  # type: ignore[arg-type]
             p_value=float("nan"),
             beta_observed=beta_observed.tolist(),
             approximation="Paper hybrid moment-inequality ARP runner with analytic variance; p-value not reported by the R reference.",
@@ -547,7 +548,7 @@ def test_sharp_null(
             alpha=alpha,
             cluster=cluster,
             treatment_support=treatment_support,
-            regression_diagnostics=regression_diagnostics,
+            regression_diagnostics=regression_diagnostics,  # type: ignore[arg-type]
             mediator_ordering=_elementwise_mediator_ordering(mediator_levels),
             mediator_columns=mediator_columns,
             support_normalization=(
@@ -589,8 +590,8 @@ def test_sharp_null(
             if regression_diagnostics is not None:
                 regression_diagnostics = {
                     **regression_diagnostics,
-                    **adjusted_regression_diagnostics,
-                    **treatment_support.diagnostics(
+                    **adjusted_regression_diagnostics,  # type: ignore[dict-item]
+                    **treatment_support.diagnostics(  # type: ignore[dict-item]
                         original_key="original_treatment_levels",
                         normalized_key="normalized_treatment_levels",
                     ),
@@ -605,7 +606,7 @@ def test_sharp_null(
             alpha=alpha,
             cluster=cluster,
             treatment_support=treatment_support,
-            regression_diagnostics=regression_diagnostics,
+            regression_diagnostics=regression_diagnostics,  # type: ignore[arg-type]
             mediator_ordering=_total_order_mediator_ordering(len(mediator_levels)),
             mediator_columns=mediator_columns,
             support_normalization=(
@@ -645,8 +646,8 @@ def test_sharp_null(
         if regression_diagnostics is not None:
             regression_diagnostics = {
                 **regression_diagnostics,
-                **adjusted_regression_diagnostics,
-                **treatment_support.diagnostics(
+                **adjusted_regression_diagnostics,  # type: ignore[dict-item]
+                **treatment_support.diagnostics(  # type: ignore[dict-item]
                     original_key="original_treatment_levels",
                     normalized_key="normalized_treatment_levels",
                 ),
@@ -670,7 +671,7 @@ def test_sharp_null(
     diagnostics = build_cell_count_diagnostics(
         df=diagnostics_df,
         d=d,
-        m=m,
+        m=m,  # type: ignore[arg-type]
         y="_tm_y_processed",
         cluster=cluster,
         requested_num_y_bins=requested_num_y_bins,
@@ -769,7 +770,7 @@ def _test_ordered_nonbinary_arp(
         applied_num_y_bins=len(y_values),
         no_bite_reason="ARP uses the paper's hybrid moment-inequality runner",
         support_diagnostics={
-            **treatment_support.diagnostics(
+            **treatment_support.diagnostics(  # type: ignore[attr-defined]
                 original_key="original_treatment_levels",
                 normalized_key="normalized_treatment_levels",
             ),
@@ -792,11 +793,11 @@ def _test_ordered_nonbinary_arp(
             "moment_inequality_count": int(a_matrix.shape[0]),
             "observed_moment_count": int(beta_observed.shape[0]),
             "shape_moment_count": int(matrices["beta_shape"].shape[0]),
-            "arp_eta": float(arp_result["eta"]),
-            "arp_standardized_stat": float(arp_result["standardized_stat"]),
-            "arp_critical_value": float(arp_result["critical_value"]),
-            "arp_sigma_B": float(arp_result["sigma_B"]),
-            "arp_lambda": arp_result["lambda"].tolist(),
+            "arp_eta": float(arp_result["eta"]),  # type: ignore[arg-type]
+            "arp_standardized_stat": float(arp_result["standardized_stat"]),  # type: ignore[arg-type]
+            "arp_critical_value": float(arp_result["critical_value"]),  # type: ignore[arg-type]
+            "arp_sigma_B": float(arp_result["sigma_B"]),  # type: ignore[arg-type]
+            "arp_lambda": arp_result["lambda"].tolist(),  # type: ignore[attr-defined]
         },
     )
 
@@ -805,15 +806,15 @@ def _test_ordered_nonbinary_arp(
             mediator_levels=original_mediator_levels,
             monotone_pairs=mediator_ordering,
             max_defiers_share=max_defiers_share,
-            matrices=matrices,
+            matrices=matrices,  # type: ignore[arg-type]
         )
     diagnostics["arp"] = arp_result["diagnostics"]
     return SharpNullResult(
         method="ARP",
         null_hypothesis="Y(0,m) = Y(1,m) for all mediator support points",
         reject=bool(arp_result["reject"]),
-        test_stat=float(arp_result["standardized_stat"]),
-        critical_value=float(arp_result["critical_value"]),
+        test_stat=float(arp_result["standardized_stat"]),  # type: ignore[arg-type]
+        critical_value=float(arp_result["critical_value"]),  # type: ignore[arg-type]
         p_value=float("nan"),
         beta_observed=beta_observed.tolist(),
         approximation=(
@@ -1063,14 +1064,14 @@ def ci_TV(
             effective_sample_size=effective_n,
             weight_matrix=weight_matrix,
         )
-        p_value = float(fsst_result["p_value"])
+        p_value = float(fsst_result["p_value"])  # type: ignore[arg-type]
         reject = bool(fsst_result["reject"])
         return {
             "null_value": float(null_value),
             "p_value": p_value,
             "reject": reject,
-            "test_stat": float(fsst_result["test_stat"]),
-            "critical_value": float(fsst_result["critical_value"]),
+            "test_stat": float(fsst_result["test_stat"]),  # type: ignore[arg-type]
+            "critical_value": float(fsst_result["critical_value"]),  # type: ignore[arg-type]
         }
 
     if bisec:
@@ -1385,7 +1386,7 @@ def test_sharp_null_cr(
         method="CR",
         null_hypothesis="Y(0,m) = Y(1,m) for all mediator support points",
         reject=bool(cr_result["reject"]),
-        test_stat=float(cr_result["confidence_interval_lower"]),
+        test_stat=float(cr_result["confidence_interval_lower"]),  # type: ignore[arg-type]
         critical_value=0.0,
         p_value=float("nan"),
         beta_observed=beta_observed.tolist(),
@@ -1476,7 +1477,7 @@ def _test_ordered_nonbinary_fsst(
         applied_num_y_bins=len(y_values),
         no_bite_reason="FSST uses the paper's bootstrap moment-selection runner",
         support_diagnostics={
-            **treatment_support.diagnostics(
+            **treatment_support.diagnostics(  # type: ignore[attr-defined]
                 original_key="original_treatment_levels",
                 normalized_key="normalized_treatment_levels",
             ),
@@ -1509,16 +1510,16 @@ def _test_ordered_nonbinary_fsst(
             mediator_levels=original_mediator_levels,
             monotone_pairs=mediator_ordering,
             max_defiers_share=max_defiers_share,
-            matrices=matrices,
+            matrices=matrices,  # type: ignore[arg-type]
         )
     diagnostics["fsst"] = fsst_result["diagnostics"]
     return SharpNullResult(
         method=method,
         null_hypothesis="Y(0,m) = Y(1,m) for all mediator support points",
         reject=bool(fsst_result["reject"]),
-        test_stat=float(fsst_result["test_stat"]),
-        critical_value=float(fsst_result["critical_value"]),
-        p_value=float(fsst_result["p_value"]),
+        test_stat=float(fsst_result["test_stat"]),  # type: ignore[arg-type]
+        critical_value=float(fsst_result["critical_value"]),  # type: ignore[arg-type]
+        p_value=float(fsst_result["p_value"]),  # type: ignore[arg-type]
         beta_observed=beta_observed.tolist(),
         approximation=(
             "FSST bootstrap moment-selection runner with ordered nonbinary "
@@ -1617,7 +1618,7 @@ def _test_ordered_nonbinary_cs(
             "nuisance constraints"
         ),
         support_diagnostics={
-            **treatment_support.diagnostics(
+            **treatment_support.diagnostics(  # type: ignore[attr-defined]
                 original_key="original_treatment_levels",
                 normalized_key="normalized_treatment_levels",
             ),
@@ -1656,7 +1657,7 @@ def _test_ordered_nonbinary_cs(
             "constraint_rows": _relaxed_null_constraint_rows(
                 mediator_levels=original_mediator_levels,
                 frac_ats_affected=float(frac_ats_affected),
-                matrix_rows=matrices["relaxed_null_constraint_rows"],
+                matrix_rows=matrices["relaxed_null_constraint_rows"],  # type: ignore[arg-type]
             ),
             "paper_reference": (
                 "manuscript/sources/arxiv-2404.11739v3/draft.tex:164-275 and lower-bound "
@@ -1672,7 +1673,7 @@ def _test_ordered_nonbinary_cs(
             mediator_levels=original_mediator_levels,
             monotone_pairs=mediator_ordering,
             max_defiers_share=max_defiers_share,
-            matrices=matrices,
+            matrices=matrices,  # type: ignore[arg-type]
         )
     if regression_diagnostics is not None:
         diagnostics["regression"] = regression_diagnostics
@@ -1758,7 +1759,7 @@ def _test_binary_kitagawa(
         applied_num_y_bins=None,
         no_bite_reason="K uses the original outcome and does not identify theta_kk_min.",
         support_diagnostics={
-            **treatment_support.diagnostics(
+            **treatment_support.diagnostics(  # type: ignore[attr-defined]
                 original_key="original_treatment_levels",
                 normalized_key="normalized_treatment_levels",
             ),
@@ -2623,7 +2624,7 @@ def _parse_scalar_mediator_ordering(
         if isinstance(raw_lower, (str, bytes)) or not isinstance(raw_lower, Sequence):
             raw_values = (raw_lower,)
         else:
-            raw_values = tuple(raw_lower)
+            raw_values = tuple(raw_lower)  # type: ignore[assignment]
         high_index = level_index[high_level]
         lower_indices = tuple(dict.fromkeys(resolve_level(value) for value in raw_values))
         if high_index not in lower_indices:
@@ -2755,7 +2756,7 @@ def _elementwise_leq(low_level: tuple[object, ...], high_level: tuple[object, ..
     comparisons: list[bool] = []
     for low_value, high_value in zip(low_level, high_level, strict=True):
         try:
-            comparisons.append(bool(low_value <= high_value))
+            comparisons.append(bool(low_value <= high_value))  # type: ignore[operator]
         except TypeError as exc:
             raise TypeError(
                 "Vector mediator elementwise monotonicity requires comparable "
@@ -2785,8 +2786,8 @@ def _validate_scalar_ordered_mediator_support(
     for index, left in enumerate(levels):
         for right in levels[index + 1 :]:
             try:
-                left <= right
-                right <= left
+                left <= right  # type: ignore[operator]
+                right <= left  # type: ignore[operator]
             except TypeError as exc:
                 raise ValueError(
                     "Nonbinary scalar mediator support must be naturally comparable "
@@ -2973,7 +2974,7 @@ def _adjusted_ordered_binary_beta_and_variance(
     for mediator in mediator_values:
         beta.append(probabilities.p_m_d0[mediator])
         influence_columns.append(
-            sum(
+            sum(  # type: ignore[arg-type]
                 adjusted.p_ym_d0_influence[(y_value, mediator)]
                 for y_value in probabilities.y_values
             )
@@ -2981,7 +2982,7 @@ def _adjusted_ordered_binary_beta_and_variance(
     for mediator in mediator_values:
         beta.append(probabilities.p_m_d1[mediator])
         influence_columns.append(
-            sum(
+            sum(  # type: ignore[arg-type]
                 adjusted.p_ym_d1_influence[(y_value, mediator)]
                 for y_value in probabilities.y_values
             )
@@ -2989,7 +2990,7 @@ def _adjusted_ordered_binary_beta_and_variance(
     for mediator in mediator_values:
         beta.append(-probabilities.p_m_d0[mediator])
         influence_columns.append(
-            -sum(
+            -sum(  # type: ignore[arg-type]
                 adjusted.p_ym_d0_influence[(y_value, mediator)]
                 for y_value in probabilities.y_values
             )
@@ -2997,7 +2998,7 @@ def _adjusted_ordered_binary_beta_and_variance(
     for mediator in mediator_values:
         beta.append(-probabilities.p_m_d1[mediator])
         influence_columns.append(
-            -sum(
+            -sum(  # type: ignore[arg-type]
                 adjusted.p_ym_d1_influence[(y_value, mediator)]
                 for y_value in probabilities.y_values
             )
@@ -3259,10 +3260,10 @@ def _relaxed_monotonicity_diagnostics(
     matrices: dict[str, object],
 ) -> dict[str, object]:
     normalized_levels = [_normalize_mediator_level(level) for level in mediator_levels]
-    defier_pairs = list(matrices["defier_theta_pairs"])
-    theta_pairs = list(matrices["theta_type_pairs"])
+    defier_pairs = list(matrices["defier_theta_pairs"])  # type: ignore[call-overload]
+    theta_pairs = list(matrices["theta_type_pairs"])  # type: ignore[call-overload]
     constraint_rows = []
-    for matrix_row in matrices["defier_cap_constraint_rows"]:
+    for matrix_row in matrices["defier_cap_constraint_rows"]:  # type: ignore[attr-defined]
         constraint_rows.append(
             {
                 "row_type": matrix_row["row_type"],
@@ -3333,7 +3334,7 @@ def _construct_ordered_nonbinary_moment_matrices(
     monotone_pair_set = set(monotone_pairs)
     has_defier_cap = max_defiers_share > 0.0
     report_relaxed_null = frac_ats_affected is not None
-    has_relaxed_null = report_relaxed_null and float(frac_ats_affected) > 0.0
+    has_relaxed_null = report_relaxed_null and float(frac_ats_affected) > 0.0  # type: ignore[arg-type]
     theta_types = list(
         _all_mediator_type_pairs(mediator_count)
         if has_defier_cap
@@ -3422,7 +3423,7 @@ def _construct_ordered_nonbinary_moment_matrices(
                 iota_leq_theta[mediator, theta_diag] = 1.0
             if has_relaxed_null:
                 iota_leq_theta[mediator, iota_index(mediator)] = -1.0
-            shape_row_index = relaxed_start_row + mediator if has_relaxed_null else None
+            shape_row_index = relaxed_start_row + mediator if has_relaxed_null else None  # type: ignore[assignment]
             relaxed_null_constraint_rows.append(
                 {
                     "row_type": "iota_upper_bound",
@@ -3447,7 +3448,7 @@ def _construct_ordered_nonbinary_moment_matrices(
         for mediator in range(mediator_count):
             theta_diag = theta_index.get((mediator, mediator))
             if has_relaxed_null and theta_diag is not None:
-                pooled_relaxation[0, theta_diag] = float(frac_ats_affected)
+                pooled_relaxation[0, theta_diag] = float(frac_ats_affected)  # type: ignore[arg-type]
                 pooled_theta_columns.append(theta_diag)
             if has_relaxed_null:
                 pooled_relaxation[0, iota_index(mediator)] = -1.0
@@ -3488,10 +3489,10 @@ def _construct_ordered_nonbinary_moment_matrices(
         "a_observed": a_observed,
         "a_shape": a_shape,
         "beta_shape": beta_shape,
-        "relaxed_null_constraint_rows": relaxed_null_constraint_rows,
-        "defier_cap_constraint_rows": defier_cap_constraint_rows,
-        "theta_type_pairs": theta_types,
-        "defier_theta_pairs": defier_pairs,
+        "relaxed_null_constraint_rows": relaxed_null_constraint_rows,  # type: ignore[dict-item]
+        "defier_cap_constraint_rows": defier_cap_constraint_rows,  # type: ignore[dict-item]
+        "theta_type_pairs": theta_types,  # type: ignore[dict-item]
+        "defier_theta_pairs": defier_pairs,  # type: ignore[dict-item]
     }
 
 
@@ -3973,7 +3974,7 @@ def _cox_shi_nuisance_degrees_of_freedom(
         rank_a = int(np.linalg.matrix_rank(a_full_eq, tol=1e-5))
         rank_b = int(np.linalg.matrix_rank(b_matrix, tol=1e-5))
         if rank_b == d_ineq:
-            return max(0, d_ineq - rank_a)
+            return max(0, d_ineq - rank_a)  # type: ignore[no-any-return]
 
         g_matrix = a_full_eq.T
         rank_g = rank_a
@@ -3997,7 +3998,7 @@ def _cox_shi_nuisance_degrees_of_freedom(
             constraint_matrix=constraint_matrix,
             d_vector=d_vector,
             beta_red_star=beta_red_star,
-            nuisance_star=nuisance_star,
+            nuisance_star=nuisance_star,  # type: ignore[misc]
         )
 
 
@@ -4060,7 +4061,7 @@ def _arp_honest_test(
         sigma=sigma,
         hybrid_kappa=hybrid_kappa,
     )
-    eta = float(lin_sol["eta"])
+    eta = float(lin_sol["eta"])  # type: ignore[arg-type]
     lambda_vec = np.asarray(lin_sol["lambda"], dtype=float)
     decision = _arp_hybrid_lf_decision(
         y_t=y_honest,
@@ -4074,9 +4075,9 @@ def _arp_honest_test(
     )
     lambda_full = np.zeros(original_moment_count, dtype=float)
     lambda_full[positive_variance] = lambda_vec
-    sigma_b = float(decision["sigma_B"])
-    standardized_stat = float(decision["standardized_stat"])
-    critical_value = float(decision["critical_value"])
+    sigma_b = float(decision["sigma_B"])  # type: ignore[arg-type]
+    standardized_stat = float(decision["standardized_stat"])  # type: ignore[arg-type]
+    critical_value = float(decision["critical_value"])  # type: ignore[arg-type]
     return {
         "reject": bool(decision["reject"]),
         "eta": eta,
@@ -4592,7 +4593,7 @@ def _arp_check_dual_solution(
         w_t=w_t,
         c=c,
     )
-    honest_solution = bool(abs(c - (-float(result["optimum"]))) <= tol)
+    honest_solution = bool(abs(c - (-float(result["optimum"]))) <= tol)  # type: ignore[arg-type]
     return {
         **result,
         "honest_solution": honest_solution,
@@ -4675,7 +4676,7 @@ def _arp_compute_eta(
     x_t: np.ndarray,
     sigma: np.ndarray,
 ) -> float:
-    return float(_arp_test_delta_lp(y_t=-np.asarray(y_t, dtype=float), x_t=x_t, sigma=sigma)["eta"])
+    return float(_arp_test_delta_lp(y_t=-np.asarray(y_t, dtype=float), x_t=x_t, sigma=sigma)["eta"])  # type: ignore[arg-type]
 
 
 def _positive_semidefinite_covariance(sigma: np.ndarray, *, tol: float) -> np.ndarray:
@@ -4683,7 +4684,7 @@ def _positive_semidefinite_covariance(sigma: np.ndarray, *, tol: float) -> np.nd
     eigenvalues = np.linalg.eigvalsh(working)
     if float(eigenvalues.min()) < -tol:
         working = working + np.eye(working.shape[0]) * (abs(float(eigenvalues.min())) + tol)
-    return working
+    return working  # type: ignore[no-any-return]
 
 
 def _cox_shi_nonuisance(

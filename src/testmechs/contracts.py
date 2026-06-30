@@ -291,7 +291,7 @@ class SharedCSVInput:
         dict of str to object
             Strict-JSON-safe dictionary of path, columns, and roles.
         """
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "data_path": str(self.data_path),
             "treatment": self.treatment,
             "mediators": list(self.mediators),
@@ -351,7 +351,7 @@ class SharpNullRequest:
         dict of str to object
             Validated request parameters suitable for deduplication and audit.
         """
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "function": "test_sharp_null",
             **self.dataset.base_comparison_fields(),
             "method": _request_text(self.method, field="method"),
@@ -407,7 +407,7 @@ class LowerBoundRequest:
 
     def comparison_view(self) -> dict[str, object]:
         """Return a strict-JSON-safe dictionary for reproducibility logging."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "function": "lb_frac_affected",
             **self.dataset.base_comparison_fields(),
             "at_group": self.at_group,
@@ -452,6 +452,11 @@ class BreakdownDefierShareRequest:
         Bisection convergence tolerance (default 1e-4).
     max_iterations : int
         Maximum bisection iterations (default 80).
+
+    See Also
+    --------
+    LowerBoundResult : Result object returned by breakdown computation.
+    lb_frac_affected : The lower bound driven to zero at the breakdown.
     """
     dataset: SharedCSVInput
     at_group: object | None = None
@@ -462,7 +467,7 @@ class BreakdownDefierShareRequest:
 
     def comparison_view(self) -> dict[str, object]:
         """Return a strict-JSON-safe dictionary for reproducibility logging."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "function": "breakdown_defier_share",
             **self.dataset.base_comparison_fields(),
             "at_group": self.at_group,
@@ -508,7 +513,7 @@ class ADEBoundsRequest:
 
     def comparison_view(self) -> dict[str, object]:
         """Return a strict-JSON-safe dictionary for reproducibility logging."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "function": "bounds_ade_ats",
             **self.dataset.base_comparison_fields(),
             "at_group": self.at_group,
@@ -542,6 +547,11 @@ class PartialDensityRequest:
         Number of grid points for continuous density (default 10000).
     reg_formula : str or None
         Optional regression formula for adjustment.
+
+    See Also
+    --------
+    PartialDensityDataResult : Result object returned by this computation.
+    partial_density_data : The function that executes this request.
     """
     dataset: SharedCSVInput
     num_y_bins: int | None = None
@@ -552,7 +562,7 @@ class PartialDensityRequest:
 
     def comparison_view(self) -> dict[str, object]:
         """Return a strict-JSON-safe dictionary for reproducibility logging."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "function": "partial_density_data",
             **self.dataset.base_comparison_fields(),
             "num_y_bins": _optional_positive_integer(
@@ -588,7 +598,7 @@ class PaperEmpiricalReproductionRequest:
 
     def comparison_view(self) -> dict[str, object]:
         """Return a strict-JSON-safe dictionary for reproducibility logging."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "function": "paper_empirical_reproduction_report",
             "fixtures_dir": None
             if self.fixtures_dir is None
@@ -675,7 +685,7 @@ class PaperMonteCarloReproductionRequest:
 
     def comparison_view(self) -> dict[str, object]:
         """Return a strict-JSON-safe dictionary for reproducibility logging."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "function": "paper_monte_carlo_reproduction_report",
             "evidence_dir": str(Path(self.evidence_dir).resolve()),
             "tables_dir": None
@@ -802,7 +812,7 @@ class PaperReproductionComparisonRequest:
 
     def comparison_view(self) -> dict[str, object]:
         """Return a strict-JSON-safe dictionary for reproducibility logging."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "function": "paper_reproduction_comparison_report",
             "evidence_dir": str(Path(self.evidence_dir).resolve()),
             "fixtures_dir": None
@@ -951,7 +961,7 @@ class PaperReproductionE2ERequest:
 
     def comparison_view(self) -> dict[str, object]:
         """Return a strict-JSON-safe dictionary for reproducibility logging."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "function": "paper_reproduction_e2e_report",
             "evidence_dir": str(Path(self.evidence_dir).resolve()),
             "milestone_version": self.milestone_version,
@@ -1051,7 +1061,7 @@ class PaperReproductionResourceManifestRequest:
         """Return a strict-JSON-safe dictionary for reproducibility logging."""
         if not isinstance(self.overwrite, bool):
             raise ValueError("Request comparison field overwrite must be boolean")
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "function": "paper_reproduction_resource_manifest_packet",
             "writer_function": "write_paper_reproduction_resource_manifest_json",
             "loader_functions": [
@@ -1127,7 +1137,7 @@ class RegressionAdjustmentSupport:
 
     def to_dict(self) -> dict[str, object]:
         """Serialize to a strict-JSON-safe dictionary for release audits."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "surface": self.surface,
             "status": self.status,
             "supported_formula_kinds": list(self.supported_formula_kinds),
@@ -1186,7 +1196,7 @@ class SharpNullDiagnosticsSupport:
 
     def to_dict(self) -> dict[str, object]:
         """Serialize to a strict-JSON-safe dictionary for release audits."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "surface": self.surface,
             "status": self.status,
             "supported_scope": self.supported_scope,
@@ -1250,7 +1260,7 @@ class PartialDensitySupport:
 
     def to_dict(self) -> dict[str, object]:
         """Serialize to a strict-JSON-safe dictionary for release audits."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "surface": self.surface,
             "status": self.status,
             "supported_scope": self.supported_scope,
@@ -1305,7 +1315,7 @@ class CellCountDiagnosticsSupport:
 
     def to_dict(self) -> dict[str, object]:
         """Serialize to a strict-JSON-safe dictionary for release audits."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "surface": self.surface,
             "status": self.status,
             "support_grid_contract": self.support_grid_contract,
@@ -1364,7 +1374,7 @@ class BoundsSupport:
 
     def to_dict(self) -> dict[str, object]:
         """Serialize to a strict-JSON-safe dictionary for release audits."""
-        return _json_safe_payload({
+        return _json_safe_payload({  # type: ignore[no-any-return]
             "surface": self.surface,
             "status": self.status,
             "supported_scope": self.supported_scope,
@@ -1933,7 +1943,7 @@ def bounds_diagnostic_schema_frame() -> list[dict[str, object]]:
                     "reference_anchor": contract.reference_anchor,
                 })
                 schema_order += 1
-    return _json_safe_payload(rows)
+    return _json_safe_payload(rows)  # type: ignore[no-any-return]
 
 
 def regression_adjustment_support_contract() -> tuple[RegressionAdjustmentSupport, ...]:
@@ -2288,7 +2298,7 @@ def sharp_null_diagnostic_schema_frame() -> list[dict[str, object]]:
                     "reference_anchor": contract.reference_anchor,
                 })
                 schema_order += 1
-    return _json_safe_payload(rows)
+    return _json_safe_payload(rows)  # type: ignore[no-any-return]
 
 
 def partial_density_support_contract() -> tuple[PartialDensitySupport, ...]:
@@ -2587,7 +2597,7 @@ def partial_density_diagnostic_schema_frame() -> list[dict[str, object]]:
                     "reference_anchor": contract.reference_anchor,
                 })
                 schema_order += 1
-    return _json_safe_payload(rows)
+    return _json_safe_payload(rows)  # type: ignore[no-any-return]
 
 
 def cell_count_diagnostics_support_contract() -> tuple[CellCountDiagnosticsSupport, ...]:

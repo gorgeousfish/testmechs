@@ -205,9 +205,11 @@ A typical workflow combining regression adjustment with bounds:
 
 ```python
 import pandas as pd
+from importlib.resources import files
 import testmechs
 
-df = pd.read_csv("baranov_data.csv")
+fixtures = files("testmechs.resources.fixtures")
+df = pd.read_csv(fixtures / "baranov_mother_data.csv")
 
 # 1. Adjusted lower bound
 bound = testmechs.lb_frac_affected(

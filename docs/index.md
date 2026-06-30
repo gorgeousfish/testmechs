@@ -37,21 +37,15 @@ validity then provide tests of the sharp null.
 
 ## Installation
 
-The review-bundle version is not yet available from the public Python Package
-Index. Use the supplied source tree, wheel, or source archive when reproducing
-the accompanying article.
-
-From the supplied source tree:
-
-```bash
-cd packages/python/testmechs-py
-pip install -e ".[plot]"
-```
-
-After a public package-index release, the runtime package can be installed with:
+Requires Python 3.12 or later.
 
 ```bash
 pip install testmechs
+```
+
+For visualization support:
+
+```bash
 pip install "testmechs[plot]"
 ```
 
@@ -87,6 +81,15 @@ bound = testmechs.lb_frac_affected(
 )
 bound.lower_bound
 #> 0.10654
+```
+
+## Guides
+
+```{toctree}
+:maxdepth: 2
+:caption: User Guides
+
+guides/interpretation
 ```
 
 ## API Reference

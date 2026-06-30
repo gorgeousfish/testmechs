@@ -892,7 +892,7 @@ def _summary_frame_text(frame: pd.DataFrame) -> str:
             for _, row in frame.iterrows()
         ]
     )
-    return display_frame.to_string(index=False)
+    return display_frame.to_string(index=False)  # type: ignore[no-any-return]
 
 
 def _summary_frame_table_html(frame: pd.DataFrame, *, caption: str) -> str:

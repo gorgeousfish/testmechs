@@ -20,6 +20,7 @@ maintainers = [
 ]
 keywords = [
   "causal-inference",
+  "testing-mechanisms",
   "mediation-analysis",
   "sharp-null",
   "instrumental-variables",
@@ -28,6 +29,7 @@ keywords = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Science/Research",
+  "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.12",
@@ -44,6 +46,9 @@ dependencies = [
 ]
 
 [project.urls]
+Repository = "https://github.com/caicxy/testmechs"
+Homepage = "https://github.com/caicxy/testmechs"
+"Bug Tracker" = "https://github.com/caicxy/testmechs/issues"
 "Method paper" = "https://doi.org/10.1093/restud/rdag028"
 "Method-paper replication" = "https://zenodo.org/records/18946845"
 
@@ -56,6 +61,19 @@ docs = [
     "sphinx-autodoc-typehints>=1.25",
     "numpydoc>=1.6",
 ]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+strict_optional = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["testmechs.monte_carlo", "testmechs.reproduction"]
+check_untyped_defs = false
+warn_return_any = false
 
 [tool.setuptools]
 package-dir = {"" = "src"}

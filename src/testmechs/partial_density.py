@@ -119,7 +119,7 @@ class PartialDensityDataResult:
                         ),
                     }
                 )
-        return _json_safe_payload(row_records)
+        return _json_safe_payload(row_records)  # type: ignore[no-any-return]
 
     def to_dict(self) -> dict[str, Any]:
         frac_compliers, frac_compliers_is_finite, frac_compliers_nonfinite = _json_safe_float(
@@ -621,7 +621,7 @@ def _adjusted_discrete_partial_density_data(
         reg_formula=reg_formula,
     )
     _require_valid_adjusted_probability_grid_for_partial_density(adjusted.diagnostics)
-    m_one_value = max(adjusted.m_values)
+    m_one_value = max(adjusted.m_values)  # type: ignore[type-var]
     p_m_0 = float(adjusted.p_m_d0.get(m_one_value, 0.0))
     p_m_1 = float(adjusted.p_m_d1.get(m_one_value, 0.0))
     frac_compliers = p_m_1 - p_m_0
@@ -927,8 +927,8 @@ def _plot_discrete_partial_density(
     _emphasize_discrete_positive_part_bars(
         bars=partial11_bars,
         y_levels=y_levels,
-        partial11_by_y=partial11_by_y,
-        partial01_by_y=partial01_by_y,
+        partial11_by_y=partial11_by_y,  # type: ignore[arg-type]
+        partial01_by_y=partial01_by_y,  # type: ignore[arg-type]
     )
     if len(y_levels) <= _DISCRETE_BAR_LABEL_MAX_LEVELS:
         _label_discrete_partial_density_bars(axis, partial11_bars)
@@ -1097,7 +1097,7 @@ def _continuous_partial_density_data(
         theta_ats=theta_ats,
         y_levels=[],
         partial_mass_records=[],
-        partial_density_records=density_records,
+        partial_density_records=density_records,  # type: ignore[arg-type]
         diagnostics={
             "outcome_column": y,
             "requested_num_y_bins": None,
@@ -1162,7 +1162,7 @@ def _adjusted_continuous_partial_density_data(
         reg_formula=reg_formula,
     )
     _require_valid_adjusted_mediator_mass_grid_for_partial_density(adjusted.diagnostics)
-    m_one_value = max(adjusted.m_values)
+    m_one_value = max(adjusted.m_values)  # type: ignore[type-var]
     target_partial01_mass = float(adjusted.p_m_d0.get(m_one_value, 0.0))
     target_partial11_mass = float(adjusted.p_m_d1.get(m_one_value, 0.0))
     frac_compliers = target_partial11_mass - target_partial01_mass
@@ -1221,7 +1221,7 @@ def _adjusted_continuous_partial_density_data(
         theta_ats=theta_ats,
         y_levels=[],
         partial_mass_records=[],
-        partial_density_records=density_records,
+        partial_density_records=density_records,  # type: ignore[arg-type]
         diagnostics={
             "outcome_column": y,
             "requested_num_y_bins": None,

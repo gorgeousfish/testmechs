@@ -82,5 +82,10 @@ html_theme_options = {
 }
 html_static_path = []
 
+# -- Suppress warnings -------------------------------------------------------
+# The autoapi-generated page for bounds.py triggers an unreferenced-citation
+# warning from a numpydoc References section.  Suppress it globally.
+suppress_warnings = ["ref.citation"]
+
 # -- Exclude patterns --------------------------------------------------------
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]

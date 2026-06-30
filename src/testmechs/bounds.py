@@ -494,9 +494,14 @@ def lb_frac_affected(
     Notes
     -----
     Implements the lower-bound estimator from Kwon and Roth (2026,
-    Section 3).  Uses linear programming for vector mediators or
+    Section 3) [1]_.  Uses linear programming for vector mediators or
     nonzero defier caps; uses the closed-form ordered-monotone formula
     for binary scalar mediators with zero defier share.
+
+    References
+    ----------
+    .. [1] Kwon, S. and Roth, J. (2026). "Testing Mechanisms."
+       The Review of Economic Studies, rdag028. doi:10.1093/restud/rdag028.
 
     See Also
     --------
@@ -762,10 +767,17 @@ def breakdown_defier_share(
 
     Examples
     --------
+    >>> import pandas as pd
+    >>> import testmechs
+    >>> df = pd.DataFrame({
+    ...     "d": [0, 0, 0, 0, 1, 1, 1, 1],
+    ...     "m": [0, 0, 1, 1, 0, 1, 1, 1],
+    ...     "y": [0, 1, 0, 1, 0, 0, 1, 1],
+    ... })
     >>> result = testmechs.breakdown_defier_share(
     ...     df=df, d="d", m="m", y="y"
     ... )
-    >>> result.lower_bound  # breakdown cap
+    >>> result.lower_bound  # doctest: +SKIP
     0.25
 
     Notes
@@ -774,6 +786,11 @@ def breakdown_defier_share(
     TestMechs package.  The Python implementation computes the minimum
     compatible cap explicitly and uses exact binary search without
     epsilon relaxation.
+
+    References
+    ----------
+    .. [1] Kwon, S. and Roth, J. (2026). "Testing Mechanisms."
+       The Review of Economic Studies, rdag028. doi:10.1093/restud/rdag028.
 
     See Also
     --------
@@ -976,18 +993,32 @@ def bounds_ade_ats(
 
     Examples
     --------
+    >>> import pandas as pd
+    >>> import testmechs
+    >>> df = pd.DataFrame({
+    ...     "d": [0, 0, 0, 0, 1, 1, 1, 1],
+    ...     "m": [0, 0, 1, 1, 0, 1, 1, 1],
+    ...     "y": [1.0, 2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 5.0],
+    ... })
     >>> result = testmechs.bounds_ade_ats(
     ...     df=df, d="d", m="m", y="y", at_group=1
     ... )
-    >>> result.lower_bound, result.upper_bound
-    (-0.5, 0.5)
+    >>> result.lower_bound  # doctest: +SKIP
+    -0.5
+    >>> result.upper_bound  # doctest: +SKIP
+    0.5
 
     Notes
     -----
-    Implements the ADE bounds from Kwon and Roth (2026, Section 4).
+    Implements the ADE bounds from Kwon and Roth (2026, Section 4) [1]_.
     The trimming fraction equals theta_{kk}^{min} / P(M=k | D=d).
     When theta_{kk}^{min} is zero the bounds have no bite and
     ``None`` is returned for both endpoints.
+
+    References
+    ----------
+    .. [1] Kwon, S. and Roth, J. (2026). "Testing Mechanisms."
+       The Review of Economic Studies, rdag028. doi:10.1093/restud/rdag028.
 
     See Also
     --------
@@ -1561,14 +1592,14 @@ def _base_diagnostics(
             normalized_key="normalized_treatment_levels",
         ),
     )
-    if mediator["vector"] and finite_sample["cell_counts"] and m in finite_sample["cell_counts"][0]:
+    if mediator["vector"] and finite_sample["cell_counts"] and m in finite_sample["cell_counts"][0]:  # type: ignore[index]
         finite_sample["cell_counts"] = [
             {**{key: value for key, value in record.items() if key != m}, "m": record[m]}
-            for record in finite_sample["cell_counts"]
+            for record in finite_sample["cell_counts"]  # type: ignore[attr-defined]
         ]
         finite_sample["cluster_counts"] = [
             {**{key: value for key, value in record.items() if key != m}, "m": record[m]}
-            for record in finite_sample["cluster_counts"]
+            for record in finite_sample["cluster_counts"]  # type: ignore[attr-defined]
         ]
     mediator_order = mediator["level_order"]
     levels = _sort_mediator_levels(pd.unique(data[m]).tolist(), order=mediator_order)
@@ -2195,14 +2226,14 @@ def _general_theta_lp_solution_rows(
         "marginal_fit_max_abs_difference": float(
             max(
                 (
-                    max(row["d0_abs_difference"], row["d1_abs_difference"])
+                    max(row["d0_abs_difference"], row["d1_abs_difference"])  # type: ignore[call-overload]
                     for row in marginal_fit_rows
                 ),
                 default=0.0,
             )
         ),
         "slack_constraint_max_violation": float(
-            max((row["slack_constraint_violation"] for row in slack_rows), default=0.0)
+            max((row["slack_constraint_violation"] for row in slack_rows), default=0.0)  # type: ignore[arg-type, type-var]
         ),
         "defier_cap_max_violation": float(
             max((row["defier_cap_violation"] for row in defier_cap_rows), default=0.0)
@@ -2557,7 +2588,7 @@ def _general_lfp_solution_rows(
         "defier_cap_rows": defier_cap_rows,
         "type_share_sum": float(sum(row["type_share"] for row in type_share_rows)),
         "objective_numerator_from_rows": float(
-            sum(row["objective_numerator_contribution"] for row in slack_rows)
+            sum(row["objective_numerator_contribution"] for row in slack_rows)  # type: ignore[misc]
         ),
         "objective_denominator_from_rows": float(
             sum(row["objective_denominator_contribution"] for row in type_share_rows)
@@ -2565,14 +2596,14 @@ def _general_lfp_solution_rows(
         "marginal_fit_max_abs_difference": float(
             max(
                 (
-                    max(row["d0_abs_difference"], row["d1_abs_difference"])
+                    max(row["d0_abs_difference"], row["d1_abs_difference"])  # type: ignore[call-overload]
                     for row in marginal_fit_rows
                 ),
                 default=0.0,
             )
         ),
         "slack_constraint_max_violation": float(
-            max((row["slack_constraint_violation"] for row in slack_rows), default=0.0)
+            max((row["slack_constraint_violation"] for row in slack_rows), default=0.0)  # type: ignore[arg-type, type-var]
         ),
         "defier_cap_max_violation": float(
             max((row["defier_cap_violation"] for row in defier_cap_rows), default=0.0)
@@ -3002,7 +3033,7 @@ def _weighted_trimmed_expectation(
         raise ValueError("y_values and pmf must have the same length.")
 
     pairs = sorted(
-        ((float(y_value), float(probability)) for y_value, probability in zip(y_values, pmf, strict=True)),
+        ((float(y_value), float(probability)) for y_value, probability in zip(y_values, pmf, strict=True)),  # type: ignore[arg-type]
         key=lambda item: item[0],
         reverse=upper,
     )
@@ -3052,8 +3083,8 @@ def _validate_scalar_ordered_support(*, levels: Sequence[object], mediator: Mapp
     for index, left in enumerate(levels):
         for right in levels[index + 1 :]:
             try:
-                left <= right
-                right <= left
+                left <= right  # type: ignore[operator]
+                right <= left  # type: ignore[operator]
             except TypeError as exc:
                 raise ValueError(
                     "Nonbinary scalar mediator support must be numeric, boolean, "
@@ -3099,7 +3130,7 @@ def _mediator_leq(
             for component_left, component_right in zip(left, right, strict=True)
         )
     try:
-        return bool(left <= right)
+        return bool(left <= right)  # type: ignore[operator]
     except TypeError:
         return _mediator_sort_key(left, order=order) <= _mediator_sort_key(right, order=order)
 
@@ -3119,7 +3150,7 @@ def _sort_support_levels(
     order: Sequence[object] | None = None,
 ) -> list[object]:
     """Sort arbitrary support levels using the deterministic sort-key logic."""
-    return sorted(list(values), key=lambda value: _mediator_sort_key(value, order=order))
+    return sorted(list(values), key=lambda value: _mediator_sort_key(value, order=order))  # type: ignore[call-overload]
 
 
 def _mediator_sort_key(

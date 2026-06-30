@@ -1,5 +1,11 @@
 # testmechs
 
+**Testing Mechanisms: Sharp-Null Tests, Lower Bounds, and Partial Density for Finite-Support Mediation Analysis**
+
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE.md)
+[![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-green.svg)](https://github.com/caicxy/testmechs)
+
 Python implementation of selected finite-support Testing Mechanisms calculations
 from Kwon and Roth (2026), for testing whether treatment effects operate entirely
 through a specified mediator.
@@ -23,22 +29,13 @@ and partial-density displays.
 
 Requires Python 3.12 or later.
 
-The review-bundle version is not yet available from the public Python Package
-Index; use the supplied source tree, wheel, or source archive when reproducing
-the accompanying article.
-
-From the supplied source tree:
-
-```bash
-git clone https://github.com/gorgeousfish/testmechs.git
-cd testmechs/packages/python/testmechs-py
-pip install -e ".[plot]"
-```
-
-After a public package-index release, the runtime package can be installed with:
-
 ```bash
 pip install testmechs
+```
+
+For visualization support:
+
+```bash
 pip install "testmechs[plot]"
 ```
 
@@ -347,32 +344,64 @@ print(testmechs.__version__)
 
 ## Citation
 
+If you use this package in academic work, please cite both the methodology paper
+and the software:
+
+**Methodology paper (APA)**:
+
+> Kwon, S., & Roth, J. (2026). Testing Mechanisms. *arXiv preprint arXiv:2404.11739*. https://arxiv.org/abs/2404.11739
+
+**Software (APA)**:
+
+> Cai, X., & Xu, W. (2026). *testmechs: Testing Mechanisms in Python* (Version 0.1.0) [Computer software]. GitHub. https://github.com/caicxy/testmechs
+
+### BibTeX
+
 ```bibtex
-@article{kwon2026testing,
-  title   = {Testing Mechanisms},
-  author  = {Kwon, Soonwoo and Roth, Jonathan},
-  journal = {The Review of Economic Studies},
-  year    = {2026},
-  pages   = {rdag028},
-  doi     = {10.1093/restud/rdag028}
+@misc{kwon2026testingmechanisms,
+      title={Testing Mechanisms}, 
+      author={Soonwoo Kwon and Jonathan Roth},
+      year={2026},
+      eprint={2404.11739},
+      archivePrefix={arXiv},
+      primaryClass={econ.EM},
+      url={https://arxiv.org/abs/2404.11739}, 
 }
 ```
 
-## Contacts and Attribution
+```bibtex
+@software{cai2026testmechs,
+  author = {Xuanyu Cai and Wenli Xu},
+  title = {testmechs: Testing Mechanisms in Python},
+  year = {2026},
+  version = {0.1.0},
+  url = {https://github.com/caicxy/testmechs},
+  note = {Python package implementing the testing mechanisms framework of Kwon and Roth (2026)}
+}
+```
 
-Package metadata distinguishes authors from maintainers. The methodology paper
-and accompanying software article list Soonwoo Kwon and Jonathan Roth as
-authors; the Python review bundle lists Xuanyu Cai and Wenli Xu as maintainer
-contacts.
+## References
 
-- Authors: Soonwoo Kwon, Brown University (soonwoo_kwon@brown.edu); Jonathan
-  Roth, Brown University (jonathan_roth@brown.edu)
-- Maintainers: Xuanyu Cai, City University of Macau (xuanyuCAI@outlook.com);
-  Wenli Xu, City University of Macau (wlxu@cityu.edu.mo)
+Kwon, S., & Roth, J. (2026). Testing Mechanisms. *The Review of Economic Studies*, rdag028. https://doi.org/10.1093/restud/rdag028
+
+Bursztyn, L., González, A. L., & Yanagizawa-Drott, D. (2020). Misperceived Social Norms: Women Working Outside the Home in Saudi Arabia. *American Economic Review*, 110(10), 2997–3029.
+
+Baranov, V., Bhalotra, S., Biroli, P., & Maselko, J. (2020). Maternal Depression, Women's Empowerment, and Parental Investment: Evidence from a Randomized Controlled Trial. *American Economic Review*, 110(3), 824–859.
+
+### Package Authors
+
+**Python Implementation**
+
+- **Xuanyu Cai**, City University of Macau
+  Email: [xuanyuCAI@outlook.com](mailto:xuanyuCAI@outlook.com)
+- **Wenli Xu**, City University of Macau
+  Email: [wlxu@cityu.edu.mo](mailto:wlxu@cityu.edu.mo)
+
+**Methodology**
+
+- **Soonwoo Kwon**, Brown University
+- **Jonathan Roth**, Brown University
 
 ## License
 
-The AGPL license text from `LICENSE.md` is included with the package source and
-distribution artifacts.
-
-AGPL-3.0-or-later
+AGPL-3.0-or-later. See [LICENSE.md](LICENSE.md) for details.
